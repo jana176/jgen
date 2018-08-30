@@ -1,4 +1,4 @@
-package database;
+package com.codegenerator.jgen.database;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -7,10 +7,15 @@ import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class DatabaseMetadata {
 
-	public static void getDatabaseMetadata(Connection connection) {
+	
+	public void getDatabaseMetadata(Connection connection) {
 
+		
 		try {
 			DatabaseMetaData metadata = connection.getMetaData();
 			ResultSet rsmd = metadata.getTables(null, null, "%", new String[] { "TABLE" });

@@ -1,4 +1,4 @@
-package generator;
+package com.codegenerator.jgen.generator;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

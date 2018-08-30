@@ -23,5 +23,8 @@
 hs_err_pid*
 
 **/.project
+**/.settings
+**/.classpath
+**/.project
 **/target/
 *.jar

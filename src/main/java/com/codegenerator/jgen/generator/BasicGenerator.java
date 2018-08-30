@@ -1,4 +1,4 @@
-package generator;
+package com.codegenerator.jgen.generator;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;

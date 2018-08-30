@@ -1,4 +1,4 @@
-package model;
+package com.codegenerator.jgen.model;
 
 import java.util.List;
 
