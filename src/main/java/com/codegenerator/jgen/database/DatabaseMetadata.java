@@ -3,94 +3,65 @@ package com.codegenerator.jgen.database;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import com.codegenerator.jgen.model.FMForeignKey;
+import com.codegenerator.jgen.model.FMTable;
+
 @Component
 public class DatabaseMetadata {
 
-	
 	public void getDatabaseMetadata(Connection connection) {
 
-		
 		try {
 			DatabaseMetaData metadata = connection.getMetaData();
-			ResultSet rsmd = metadata.getTables(null, null, "%", new String[] { "TABLE" });
-			
-			List<List<String>> resultsetlist = new ArrayList<>();
-			ResultSetMetaData metadata2 = rsmd.getMetaData();
-			int numberOfColumns = metadata2.getColumnCount();
+			ResultSet tableMetaData = metadata.getTables(null, null, "%", new String[] { "TABLE" });
+			List<FMTable> tables = processTables(tableMetaData);
 
-			List<String> tableNames = new ArrayList<>();
+			tables.stream().forEach(table -> System.out.println(table.toString()));
 
-			while (rsmd.next()) {
-				int i = 1;
-				List<String> thatRowData = new ArrayList<>();
-				while (i <= numberOfColumns) {
-					thatRowData.add(rsmd.getString(i++));
-					if (i == 3) {
-						tableNames.add(rsmd.getString(i));
-					}
-				}
-				resultsetlist.add(thatRowData);
-			}
-
-			System.out.println(numberOfColumns);
-			StringBuilder sb = new StringBuilder();
-			resultsetlist.stream().forEach(result -> {
-				sb.append(result);
-				sb.append("\t");
-			});
-			System.out.println(sb);
-
-			System.out.println(tableNames.size());
-
-			// FOR EVERY TABLE	
-			tableNames.stream().forEach(name -> {
+			// FOR EVERY TABLE
+			tables.stream().forEach(table -> {
 				try {
-					
-					//GET COLUMNS FOR A TABLE
-					ResultSet columns = metadata.getColumns(null,null, name.toString(), null);
+					String name = table.getTableName().toString();
+					// GET COLUMNS FOR A TABLE
+					ResultSet columns = metadata.getColumns(null, null, name.toString(), null);
 					System.out.println("Table: " + name);
-					while(columns.next()) {
+					while (columns.next()) {
 						String columnName = columns.getString("COLUMN_NAME");
-					    String datatype = columns.getString("TYPE_NAME");
-					    String columnsize = columns.getString("COLUMN_SIZE");
-					    String decimaldigits = columns.getString("DECIMAL_DIGITS");
-					    String isNullable = columns.getString("IS_NULLABLE");
-					    String is_autoIncrment = columns.getString("IS_AUTOINCREMENT");
-					    //Printing results
-					    System.out.println(columnName + "---" + datatype + "---" + columnsize + "---" + decimaldigits + "---" + isNullable + "---" + is_autoIncrment);
+						String datatype = columns.getString("TYPE_NAME");
+						String columnsize = columns.getString("COLUMN_SIZE");
+						String decimaldigits = columns.getString("DECIMAL_DIGITS");
+						String isNullable = columns.getString("IS_NULLABLE");
+						String is_autoIncrment = columns.getString("IS_AUTOINCREMENT");
+						// Printing results
+						System.out.println(columnName + "---" + datatype + "---" + columnsize + "---" + decimaldigits
+								+ "---" + isNullable + "---" + is_autoIncrment);
 					}
-					
-					
-					//GET PRIMARY KEYS
-					ResultSet PK = metadata.getPrimaryKeys(null,null, name.toString());
+
+					// GET PRIMARY KEYS
+					ResultSet PK = metadata.getPrimaryKeys(null, null, name.toString());
 					System.out.println("------------PRIMARY KEYS-------------");
-					while(PK.next())
-					{
-					    System.out.println(PK.getString("COLUMN_NAME") + "===" + PK.getString("PK_NAME"));
+					while (PK.next()) {
+						System.out.println(PK.getString("COLUMN_NAME") + "===" + PK.getString("PK_NAME"));
 					}
-					
-					//GET FOREIGN KEYS
+
+					// GET FOREIGN KEYS
 					ResultSet FK = metadata.getImportedKeys(null, null, name.toString());
 					System.out.println("------------FOREIGN KEYS-------------");
-					while(FK.next())
-					{
-					    System.out.println(FK.getString("PKTABLE_NAME") + "---" + FK.getString("PKCOLUMN_NAME") + "===" + FK.getString("FKTABLE_NAME") + "---" + FK.getString("FKCOLUMN_NAME"));
-					}
-					
-					//GET UNIQUE COLUMNS
+					processForeignKeys(FK);
+
+					// GET UNIQUE COLUMNS
 					ResultSet unique = metadata.getIndexInfo(null, null, name.toString(), true, false);
 					System.out.println("------------UNIQUE COLUMNS-------------");
-					while(unique.next())
-					{
-					    System.out.println(unique.getString("COLUMN_NAME"));
+					while (unique.next()) {
+						System.out.println(unique.getString("COLUMN_NAME"));
 					}
-					
+
 				} catch (Exception e) {
 					System.out.println(e);
 				}
@@ -101,4 +72,30 @@ public class DatabaseMetadata {
 			System.out.println(e);
 		}
 	}
+
+	private List<FMTable> processTables(ResultSet resultSet) throws SQLException {
+		List<FMTable> tables = new ArrayList<>();
+
+		while (resultSet.next()) {
+			FMTable table = new FMTable();
+			table.setTableName(resultSet.getString(3));
+			table.setTableTypeName(resultSet.getString(4));
+			table.setTableCatalog(resultSet.getString(6));
+			table.setTableSchema(resultSet.getString(7));
+
+			tables.add(table);
+		}
+		return tables;
+	}
+
+	private List<FMForeignKey> processForeignKeys(ResultSet resultSet) throws SQLException {
+
+		while (resultSet.next()) {
+			System.out.println(resultSet.getString("PKTABLE_NAME") + "---" + resultSet.getString("PKCOLUMN_NAME")
+					+ "===" + resultSet.getString("FKTABLE_NAME") + "---" + resultSet.getString("FKCOLUMN_NAME"));
+		}
+		List<FMForeignKey> foreignKeys = new ArrayList<>();
+		return foreignKeys;
+	}
+
 }
