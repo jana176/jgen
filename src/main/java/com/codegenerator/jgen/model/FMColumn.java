@@ -5,7 +5,6 @@ import lombok.Data;
 @Data
 public class FMColumn {
 
-	private String tableSchema;
 	private String tableName;
 	private String columnName;
 	private String columnTypeName;
@@ -14,6 +13,8 @@ public class FMColumn {
 	private String columnDefault;
 	private Boolean isNullable;
 	private Boolean isAutoincrement;
-	private Boolean isPrimaryKey;
+	private Boolean isPrimaryKey = false;
+	private Boolean isUnique;
+	private Boolean isGenerated = false;
 	private FMForeignKey foreignKeyInfo;
 }
