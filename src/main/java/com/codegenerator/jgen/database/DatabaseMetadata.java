@@ -34,8 +34,7 @@ public class DatabaseMetadata {
 			databaseMetadata.setUrl(metadata.getURL());
 			databaseMetadata.setUsername(metadata.getUserName());
 			databaseMetadata.setTables(tables);
-
-			System.out.println(databaseMetadata);
+			
 		} catch (Exception e) {
 			System.out.println("Error while trying to extract database metadata: " + e);
 		}
@@ -48,7 +47,7 @@ public class DatabaseMetadata {
 		while (resultSet.next()) {
 			FMTable table = new FMTable();
 			table.setTableSchema(resultSet.getString("TABLE_CAT"));
-			table.setTableName(resultSet.getString("TABLE_NAME"));
+			table.setTableName(resultSet.getString("TABLE_NAME").toUpperCase());
 			table.setTableType(resultSet.getString("TABLE_TYPE"));
 			tables.add(table);
 		}

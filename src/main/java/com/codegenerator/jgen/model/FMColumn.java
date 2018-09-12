@@ -14,7 +14,8 @@ public class FMColumn {
 	private Boolean isNullable;
 	private Boolean isAutoincrement;
 	private Boolean isPrimaryKey = false;
-	private Boolean isUnique;
+	private Boolean isUnique = false;
 	private Boolean isGenerated = false;
+	private Boolean isEnum = false;
 	private FMForeignKey foreignKeyInfo;
 }
