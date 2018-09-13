@@ -2,6 +2,9 @@ package com.codegenerator.jgen.configuration;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
+
+import javax.sql.DataSource;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -25,5 +28,18 @@ public class JGenConfiguration implements WebMvcConfigurer {
 		freeMarkerConfigurer.setConfiguration(config);
 		return freeMarkerConfigurer;
 	}
+	
+	@Bean
+	public Connection connection(DataSource dataSource) {
 
+		Connection connection = null;
+		try {
+			connection = dataSource.getConnection();
+			System.out.println("Successfully connected to database.");
+		} catch (Exception e) {
+			System.out.println("Failed to create the database connection. " + e);
+		}
+		return connection;
+	}
+	
 }

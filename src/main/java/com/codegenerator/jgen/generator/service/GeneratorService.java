@@ -1,4 +1,4 @@
-package com.codegenerator.jgen.service;
+package com.codegenerator.jgen.generator.service;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -37,7 +37,7 @@ public class GeneratorService {
 
 	public Writer getAndPrepareWriter(PackageType packageType, String className) throws IOException {
 		System.out.println();
-		File outputFile = new File(BASE_PATH + File.separator + "src/main/resources/generated" + File.separator
+		File outputFile = new File(BASE_PATH + File.separator + "src/main/java/generated" + File.separator
 				+ packageType.toString().toLowerCase() + File.separator + ClassNamesUtil.fromTableToClassName(className)
 				+ ".java");
 		outputFile.getParentFile().mkdirs();

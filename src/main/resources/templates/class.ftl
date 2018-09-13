@@ -1,8 +1,7 @@
-package model;
+package generated.model;
 
-import javax.persistence.*;
-<#list class.tableColumns as package>
-import ${package.columnName};
+<#list imports as package>
+import ${package};
 </#list>
 
 @Entity
@@ -10,18 +9,19 @@ import ${package.columnName};
 public class ${class.tableName?capitalize} {
 	
 	<#list fields as field>
+	
 		<#if field.isPrimaryKey>
-			@Id
-		</#if>
+		@Id
+		<#else>
 		<#if field.isGenerated>
-			@GeneratedValue
+		@GeneratedValue
 		</#if>
 		<#if field.isEnum>
-			@Enumerated
+		@Enumerated(EnumType.STRING)
 		</#if>
-		@Column(name = "${field.columnName}", <#if !field.isNullable>nullable = false, </#if> <#if field.isUnique>unique = true, </#if>length = ${field.columnSize})
-		public ${field.columnTypeName} ${field.columnName}; 
+		@Column(name = "${field.columnName}", length = ${field.columnSize}<#if !field.isNullable>, nullable = false</#if><#if field.isUnique>, unique = true</#if>)
+		</#if>
+		public ${field.columnTypeName} ${field.fieldName};
 	</#list>
 
-		
 }

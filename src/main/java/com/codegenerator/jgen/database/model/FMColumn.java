@@ -1,4 +1,6 @@
-package com.codegenerator.jgen.model;
+package com.codegenerator.jgen.database.model;
+
+import java.util.List;
 
 import lombok.Data;
 
@@ -7,6 +9,7 @@ public class FMColumn {
 
 	private String tableName;
 	private String columnName;
+	private String fieldName;
 	private String columnTypeName;
 	private Integer columnSize;
 	private Integer decimalDigits;
@@ -17,5 +20,6 @@ public class FMColumn {
 	private Boolean isUnique = false;
 	private Boolean isGenerated = false;
 	private Boolean isEnum = false;
+	private List<String> enumValues;
 	private FMForeignKey foreignKeyInfo;
 }

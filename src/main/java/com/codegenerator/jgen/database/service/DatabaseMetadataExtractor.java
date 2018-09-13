@@ -1,23 +1,29 @@
-package com.codegenerator.jgen.database;
+package com.codegenerator.jgen.database.service;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.codegenerator.jgen.model.FMColumn;
-import com.codegenerator.jgen.model.FMDatabaseMetadata;
-import com.codegenerator.jgen.model.FMForeignKey;
-import com.codegenerator.jgen.model.FMTable;
+import com.codegenerator.jgen.database.model.FMColumn;
+import com.codegenerator.jgen.database.model.FMDatabaseMetadata;
+import com.codegenerator.jgen.database.model.FMForeignKey;
+import com.codegenerator.jgen.database.model.FMTable;
+import com.codegenerator.jgen.generator.ClassNamesUtil;
 
 @Component
-public class DatabaseMetadata {
-
-	public FMDatabaseMetadata getDatabaseMetadata(Connection connection) {
+public class DatabaseMetadataExtractor {
+	
+	@Autowired
+	public Connection connection;
+	
+	public FMDatabaseMetadata getDatabaseMetadata() {
 		FMDatabaseMetadata databaseMetadata = new FMDatabaseMetadata();
 
 		try {
@@ -30,6 +36,8 @@ public class DatabaseMetadata {
 			processUniqueColumnsForTable(tables, metadata);
 			processPrimaryKeysForTable(tables, metadata);
 
+			
+			
 			databaseMetadata.setDriverName(metadata.getDriverName());
 			databaseMetadata.setUrl(metadata.getURL());
 			databaseMetadata.setUsername(metadata.getUserName());
@@ -68,13 +76,16 @@ public class DatabaseMetadata {
 					column.setTableName(name);
 					column.setColumnName(columnsResultSet.getString("COLUMN_NAME"));
 					column.setColumnTypeName(columnsResultSet.getString("TYPE_NAME"));
+					if (column.getColumnTypeName().equals("ENUM")) {
+						column.setIsEnum(true);
+						retrieveEnumValues(column, connection);
+					}
 					column.setColumnSize(columnsResultSet.getInt("COLUMN_SIZE"));
 					column.setColumnDefault(columnsResultSet.getString("COLUMN_DEF"));
 					column.setDecimalDigits(columnsResultSet.getInt("DECIMAL_DIGITS"));
 					column.setIsNullable(columnsResultSet.getBoolean("IS_NULLABLE"));
 					column.setIsAutoincrement(columnsResultSet.getBoolean("IS_AUTOINCREMENT"));
 					column.setIsGenerated(columnsResultSet.getBoolean("IS_GENERATEDCOLUMN"));
-
 					columns.add(column);
 				}
 				table.setTableColumns(columns);
@@ -86,6 +97,30 @@ public class DatabaseMetadata {
 
 	}
 
+	
+	private void retrieveEnumValues(FMColumn column, Connection connection) {
+			String query = String.format("SHOW COLUMNS FROM %s LIKE '%s'", column.getTableName(), column.getColumnName());
+			Statement stmt = null;
+			try {
+		        stmt = connection.createStatement();
+		        ResultSet rs = stmt.executeQuery(query);
+		        while (rs.next()) {
+		        	column.setEnumValues(ClassNamesUtil.separateEnumValues(rs.getString("Type")));
+		        }
+		    } catch (SQLException e ) {
+		    	System.out.println(e);
+		    } finally {
+		        if (stmt != null) { try {
+					stmt.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} }
+		    }
+		
+		
+	}
+	
 	private void processPrimaryKeysForTable(List<FMTable> tables, DatabaseMetaData metadata) {
 
 		tables.stream().forEach(table -> {
