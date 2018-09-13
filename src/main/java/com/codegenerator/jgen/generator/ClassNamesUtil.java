@@ -10,7 +10,7 @@ import java.util.List;
  */
 public final class ClassNamesUtil {
 
-	public static String fromTableToClassName(String tableName) {
+	public static String toClassName(String tableName) {
 		StringBuilder builder = new StringBuilder();
 
 		String parts[] = tableName.split("_");
@@ -23,7 +23,7 @@ public final class ClassNamesUtil {
 		return builder.toString();
 	}
 
-	public static String fromColumnNameToFieldName(String fieldName) {
+	public static String toFieldName(String fieldName) {
 		StringBuilder builder = new StringBuilder();
 		String initialSplit[] = fieldName.split("_", 2);
 
@@ -44,18 +44,15 @@ public final class ClassNamesUtil {
 	}
 
 	public static List<String> separateEnumValues(String enumType) {
-		enumType.substring(0, 3);
-
-		String splits[] = enumType.split(",");
+		String enumerations = enumType.replaceAll("enum", "");
+		String splits[] = enumerations.split(",");
 		List<String> parts = Arrays.asList(splits);
 		List<String> clearedParts = new ArrayList<>();
-		
+
 		parts.forEach(part -> {
 			clearedParts.add(part.replaceAll("\\(", "").replaceAll("\\)", "").replaceAll("'", ""));
 		});
 		return clearedParts;
 	}
-
-
 
 }

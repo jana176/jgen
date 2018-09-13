@@ -1,4 +1,4 @@
-package com.codegenerator.jgen.database.service;
+package com.codegenerator.jgen.database;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import com.codegenerator.jgen.database.model.FMColumn;
 import com.codegenerator.jgen.database.model.FMDatabaseMetadata;
@@ -17,7 +17,7 @@ import com.codegenerator.jgen.database.model.FMForeignKey;
 import com.codegenerator.jgen.database.model.FMTable;
 import com.codegenerator.jgen.generator.ClassNamesUtil;
 
-@Component
+@Repository
 public class DatabaseMetadataExtractor {
 	
 	@Autowired

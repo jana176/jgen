@@ -27,8 +27,9 @@ public class GeneratorService {
 	public Template retrieveTemplate(PackageType packageType) {
 		Configuration config = freeMarkerConfigurer.getConfiguration();
 		Template template = null;
+		String templateName = determineTemplateName(packageType);
 		try {
-			template = config.getTemplate("class".concat(".ftl"));
+			template = config.getTemplate(templateName);
 		} catch (IOException e) {
 			System.out.println("Can't find template " + e);
 		}
@@ -38,11 +39,25 @@ public class GeneratorService {
 	public Writer getAndPrepareWriter(PackageType packageType, String className) throws IOException {
 		System.out.println();
 		File outputFile = new File(BASE_PATH + File.separator + "src/main/java/generated" + File.separator
-				+ packageType.toString().toLowerCase() + File.separator + ClassNamesUtil.fromTableToClassName(className)
+				+ packageType.toString().toLowerCase() + File.separator + ClassNamesUtil.toClassName(className)
 				+ ".java");
 		outputFile.getParentFile().mkdirs();
 
 		return new OutputStreamWriter(new FileOutputStream(outputFile));
 	}
 
+	private String determineTemplateName(PackageType type) {
+		switch (type) {
+		case ENUM:
+			return "enum.ftl";
+		case MODEL:
+			return "class.ftl";
+		case REPOSITORY:
+			return "repo.ftl";
+		case CONTROLLER:
+			return "controller.ftl";
+		default:
+			return "";
+		}
+	}
 }

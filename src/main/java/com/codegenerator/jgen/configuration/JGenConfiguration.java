@@ -31,7 +31,6 @@ public class JGenConfiguration implements WebMvcConfigurer {
 	
 	@Bean
 	public Connection connection(DataSource dataSource) {
-
 		Connection connection = null;
 		try {
 			connection = dataSource.getConnection();

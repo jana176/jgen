@@ -11,8 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.codegenerator.jgen.database.model.FMDatabaseMetadata;
 import com.codegenerator.jgen.database.service.DatabaseMetadataService;
-import com.codegenerator.jgen.generator.ClassNamesUtil;
-import com.codegenerator.jgen.generator.ModelGenerator;
+import com.codegenerator.jgen.generator.service.ModelGeneratorService;
 
 @RestController
 @RequestMapping("/jgen")
@@ -22,16 +21,14 @@ public class JGenController {
 	public DatabaseMetadataService databaseMetadataService;
 
 	@Autowired
-	public ModelGenerator classGenerator;
+	public ModelGeneratorService modelGeneratorService;
 
 	@PostMapping("/generate")
 	public ResponseEntity<?> generateDatabaseMetadata() throws SQLException {
 
 		FMDatabaseMetadata metadata = databaseMetadataService.retrieveDatabaseMetadata();
-		classGenerator.generate(metadata);
-		
-		System.out.println(ClassNamesUtil.separateEnumValues("('MALE','FEMALE','WHATEVER')"));
-		
+		modelGeneratorService.generate(metadata);
+
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 

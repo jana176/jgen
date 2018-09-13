@@ -17,7 +17,7 @@ public class ${class.tableName?capitalize} {
 		@GeneratedValue
 		</#if>
 		<#if field.isEnum>
-		@Enumerated(EnumType.STRING)
+		@Enumerated
 		</#if>
 		@Column(name = "${field.columnName}", length = ${field.columnSize}<#if !field.isNullable>, nullable = false</#if><#if field.isUnique>, unique = true</#if>)
 		</#if>
