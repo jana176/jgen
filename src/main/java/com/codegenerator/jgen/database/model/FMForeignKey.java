@@ -1,4 +1,4 @@
-package model;
+package com.codegenerator.jgen.database.model;
 
 import lombok.Data;
 

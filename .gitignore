@@ -23,5 +23,9 @@
 hs_err_pid*
 
 **/.project
+**/.settings
+**/.classpath
+**/.project
 **/target/
+**/src/main/java/generated/
 *.jar

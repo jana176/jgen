@@ -1,17 +1,18 @@
-package generator;
+package com.codegenerator.jgen.generator;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 public class GeneratorOptions {
 
-	private String outputPath;
-	private String templateName;
 	private String templateDir;
+	private String templateName;
+	private String outputFilePackage;
 	private String outputFileName;
 	private Boolean overwrite;
-	private String filePackage;
 
 }
