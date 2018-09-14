@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.codegenerator.jgen.database.model.FMColumn;
 import com.codegenerator.jgen.database.model.FMDatabaseMetadata;
+import com.codegenerator.jgen.database.model.FMForeignKey;
 import com.codegenerator.jgen.database.model.FMTable;
 import com.codegenerator.jgen.generator.ClassNamesUtil;
 import com.codegenerator.jgen.model.PackageType;
@@ -24,15 +25,15 @@ public class ModelGeneratorService {
 
 	@Autowired
 	public GeneratorService generatorService;
-	
+
 	@Autowired
 	public EnumGeneratorService enumGeneratorService;
 
 	private List<String> imports = new ArrayList<>();
-	
+
 	public void generate(FMDatabaseMetadata databaseMetadata) {
 		databaseMetadata.getTables().forEach(table -> {
-			table.getTableColumns().forEach(column -> determineEnumGeneration(column));
+			table.getTableColumns().forEach(column -> preprocessColumn(column));
 			generateModelClass(table);
 		});
 	}
@@ -65,25 +66,49 @@ public class ModelGeneratorService {
 		imports.clear();
 	}
 
-	private void determineEnumGeneration(FMColumn column) {
-		if(column.getIsEnum()) {
+	private void preprocessColumn(FMColumn column) {
+		if (column.getIsEnum()) {
 			enumGeneratorService.generate(column);
 		}
+		if (column.getForeignKeyInfo() != null) {
+			FMForeignKey foreignKey = column.getForeignKeyInfo();
+			foreignKey.setPkTableName(ClassNamesUtil.toClassName(foreignKey.getPkTableName()));
+			foreignKey.setPkColumnName(ClassNamesUtil.toFieldName(foreignKey.getPkTableName()));
+			determineCascadeOperation(foreignKey);
+			imports.add("javax.persistence.ManyToOne");
+		}
 	}
-	
+
+	private FMForeignKey determineCascadeOperation(FMForeignKey foreignKey) {
+		final String update = foreignKey.getUpdateRule();
+		final String delete = foreignKey.getDeleteRule();
+		if (update.equals("importedKeyCascade") && delete.equals("importedKeyCascade")) {
+			foreignKey.setCascadeType("ALL");
+			imports.add("javax.persistence.CascadeType");
+		}
+		if (!update.equals("importedKeyCascade") && delete.equals("importedKeyCascade")) {
+			foreignKey.setOrphanRemoval(true);
+			foreignKey.setCascadeType("REMOVE");
+			imports.add("javax.persistence.CascadeType");
+		}
+		
+		return foreignKey;
+	}
+
 	private FMTable prepareTableData(FMTable table) {
 		imports.add("javax.persistence.Column");
 		imports.add("javax.persistence.Entity");
 		imports.add("javax.persistence.Table");
 		imports.add("javax.persistence.Id");
 		table.getTableColumns().forEach(column -> {
-			if(!column.getIsEnum()) {
+			if (!column.getIsEnum()) {
 				column.setColumnTypeName(determineDataType(column.getColumnTypeName()));
 			} else {
 				imports.add("javax.persistence.Enumerated");
+				imports.add("javax.persistence.EnumType");
 				column.setColumnTypeName(ClassNamesUtil.toClassName(column.getColumnName()));
 			}
-			
+
 			column.setFieldName(ClassNamesUtil.toFieldName(column.getColumnName()));
 		});
 
@@ -115,6 +140,5 @@ public class ModelGeneratorService {
 			return "Unknown data type";
 		}
 	}
-
 
 }

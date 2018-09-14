@@ -13,5 +13,7 @@ public class FMForeignKey {
 	private String fkColumnName;
 	private String updateRule;
 	private String deleteRule;
+	private String cascadeType = null;
+	private Boolean orphanRemoval = false;
 
 }

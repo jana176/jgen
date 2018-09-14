@@ -153,12 +153,12 @@ public class DatabaseMetadataExtractor {
 				while (resultSet.next()) {
 					FMForeignKey foreignKey = new FMForeignKey();
 					foreignKey.setPkTableSchema(resultSet.getString("PKTABLE_CAT"));
-					foreignKey.setPkTableName(resultSet.getString("PKTABLE_NAME"));
-					foreignKey.setPkColumnName(resultSet.getString("PKCOLUMN_NAME"));
+					foreignKey.setPkTableName(resultSet.getString("PKTABLE_NAME").toUpperCase());
+					foreignKey.setPkColumnName(resultSet.getString("PKCOLUMN_NAME").toUpperCase());
 
 					foreignKey.setFkTableSchema(resultSet.getString("FKTABLE_CAT"));
-					foreignKey.setFkTableName(resultSet.getString("FKTABLE_NAME"));
-					foreignKey.setFkColumnName(resultSet.getString("FKCOLUMN_NAME"));
+					foreignKey.setFkTableName(resultSet.getString("FKTABLE_NAME").toUpperCase());
+					foreignKey.setFkColumnName(resultSet.getString("FKCOLUMN_NAME").toUpperCase());
 					foreignKey.setUpdateRule(determineUpdateRule(resultSet.getString("UPDATE_RULE")));
 					foreignKey.setDeleteRule(determineDeleteRule(resultSet.getString("DELETE_RULE")));
 					System.out.println("TU JE: " + resultSet.getObject(10));
@@ -202,53 +202,37 @@ public class DatabaseMetadataExtractor {
 	}
 
 	private String determineUpdateRule(String index) {
-		String rule = "";
 		switch (index) {
 		case "0":
-			rule = "importedNoAction";
-			break;
+			return "importedNoAction";
 		case "1":
-			rule = "importedKeyCascade";
-			break;
+			return "importedKeyCascade";
 		case "2":
-			rule = "importedKeySetNull";
-			break;
+			return "importedKeySetNull";
 		case "3":
-			rule = "importedKeySetDefault";
-			break;
+			return "importedKeySetDefault";
 		case "4":
-			rule = "importedKeyRestrict";
-			break;
+			return "importedKeyRestrict";
 		default:
-			rule = "";
-			break;
+			return "";
 		}
-		return rule;
 	}
 
 	private String determineDeleteRule(String index) {
-		String rule = "";
 		switch (index) {
 		case "0":
-			rule = "importedKeyNoAction";
-			break;
+			return "importedKeyNoAction";
 		case "1":
-			rule = "importedKeyCascade";
-			break;
+			return "importedKeyCascade";
 		case "2":
-			rule = "importedKeySetNull";
-			break;
+			return "importedKeySetNull";
 		case "3":
-			rule = "importedKeyRestrict";
-			break;
+			return "importedKeyRestrict";
 		case "4":
-			rule = "importedKeySetDefault";
-			break;
+			return "importedKeySetDefault";
 		default:
-			rule = "";
-			break;
+			return "";
 		}
-		return rule;
 	}
 
 }
