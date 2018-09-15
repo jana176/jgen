@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 
-import com.codegenerator.jgen.generator.ClassNamesUtil;
 import com.codegenerator.jgen.model.PackageType;
 
 import freemarker.template.Configuration;
@@ -39,7 +38,7 @@ public class GeneratorService {
 	public Writer getAndPrepareWriter(PackageType packageType, String className) throws IOException {
 		System.out.println();
 		File outputFile = new File(BASE_PATH + File.separator + "src/main/java/generated" + File.separator
-				+ packageType.toString().toLowerCase() + File.separator + ClassNamesUtil.toClassName(className)
+				+ packageType.toString().toLowerCase() + File.separator + className
 				+ ".java");
 		outputFile.getParentFile().mkdirs();
 
@@ -53,7 +52,7 @@ public class GeneratorService {
 		case MODEL:
 			return "class.ftl";
 		case REPOSITORY:
-			return "repo.ftl";
+			return "repository.ftl";
 		case CONTROLLER:
 			return "controller.ftl";
 		default:

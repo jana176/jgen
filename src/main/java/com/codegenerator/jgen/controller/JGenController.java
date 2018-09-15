@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.codegenerator.jgen.database.model.FMDatabaseMetadata;
 import com.codegenerator.jgen.database.service.DatabaseMetadataService;
 import com.codegenerator.jgen.generator.service.ModelGeneratorService;
+import com.codegenerator.jgen.generator.service.RepositoryGeneratorService;
 
 @RestController
 @RequestMapping("/jgen")
@@ -22,13 +23,16 @@ public class JGenController {
 
 	@Autowired
 	public ModelGeneratorService modelGeneratorService;
+	
+	@Autowired
+	public RepositoryGeneratorService repositoryGeneratorService;
 
 	@PostMapping("/generate")
 	public ResponseEntity<?> generateDatabaseMetadata() throws SQLException {
 
 		FMDatabaseMetadata metadata = databaseMetadataService.retrieveDatabaseMetadata();
 		modelGeneratorService.generate(metadata);
-
+		repositoryGeneratorService.generate(metadata);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
