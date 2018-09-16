@@ -6,7 +6,7 @@ import ${package};
 
 @Entity
 @Table(name = "${class.tableName}")
-public class ${class.tableName?capitalize} {
+public class ${class.className?capitalize} {
 	<#list fields as field>
 
 		<#if field.isGenerated>

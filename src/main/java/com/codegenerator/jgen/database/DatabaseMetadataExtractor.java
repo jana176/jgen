@@ -19,10 +19,10 @@ import com.codegenerator.jgen.generator.ClassNamesUtil;
 
 @Repository
 public class DatabaseMetadataExtractor {
-	
+
 	@Autowired
 	public Connection connection;
-	
+
 	public FMDatabaseMetadata getDatabaseMetadata() {
 		FMDatabaseMetadata databaseMetadata = new FMDatabaseMetadata();
 
@@ -36,13 +36,11 @@ public class DatabaseMetadataExtractor {
 			processUniqueColumnsForTable(tables, metadata);
 			processPrimaryKeysForTable(tables, metadata);
 
-			
-			
 			databaseMetadata.setDriverName(metadata.getDriverName());
 			databaseMetadata.setUrl(metadata.getURL());
 			databaseMetadata.setUsername(metadata.getUserName());
 			databaseMetadata.setTables(tables);
-			
+
 		} catch (Exception e) {
 			System.out.println("Error while trying to extract database metadata: " + e);
 		}
@@ -56,6 +54,8 @@ public class DatabaseMetadataExtractor {
 			FMTable table = new FMTable();
 			table.setTableSchema(resultSet.getString("TABLE_CAT"));
 			table.setTableName(resultSet.getString("TABLE_NAME").toUpperCase());
+			table.setClassName(ClassNamesUtil.toClassName(table.getTableName()));
+			System.out.println(table.getClassName());
 			table.setTableType(resultSet.getString("TABLE_TYPE"));
 			tables.add(table);
 		}
@@ -97,30 +97,30 @@ public class DatabaseMetadataExtractor {
 
 	}
 
-	
 	private void retrieveEnumValues(FMColumn column, Connection connection) {
-			String query = String.format("SHOW COLUMNS FROM %s LIKE '%s'", column.getTableName(), column.getColumnName());
-			Statement stmt = null;
-			try {
-		        stmt = connection.createStatement();
-		        ResultSet rs = stmt.executeQuery(query);
-		        while (rs.next()) {
-		        	column.setEnumValues(ClassNamesUtil.separateEnumValues(rs.getString("Type")));
-		        }
-		    } catch (SQLException e ) {
-		    	System.out.println(e);
-		    } finally {
-		        if (stmt != null) { try {
+		String query = String.format("SHOW COLUMNS FROM %s LIKE '%s'", column.getTableName(), column.getColumnName());
+		Statement stmt = null;
+		try {
+			stmt = connection.createStatement();
+			ResultSet rs = stmt.executeQuery(query);
+			while (rs.next()) {
+				column.setEnumValues(ClassNamesUtil.separateEnumValues(rs.getString("Type")));
+			}
+		} catch (SQLException e) {
+			System.out.println(e);
+		} finally {
+			if (stmt != null) {
+				try {
 					stmt.close();
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				} }
-		    }
-		
-		
+				}
+			}
+		}
+
 	}
-	
+
 	private void processPrimaryKeysForTable(List<FMTable> tables, DatabaseMetaData metadata) {
 
 		tables.stream().forEach(table -> {
@@ -234,5 +234,6 @@ public class DatabaseMetadataExtractor {
 			return "";
 		}
 	}
+
 
 }

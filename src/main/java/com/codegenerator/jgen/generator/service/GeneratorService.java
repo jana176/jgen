@@ -38,8 +38,7 @@ public class GeneratorService {
 	public Writer getAndPrepareWriter(PackageType packageType, String className) throws IOException {
 		System.out.println();
 		File outputFile = new File(BASE_PATH + File.separator + "src/main/java/generated" + File.separator
-				+ determinePackagePath(packageType) + File.separator + className
-				+ ".java");
+				+ determinePackagePath(packageType) + File.separator + className + ".java");
 		outputFile.getParentFile().mkdirs();
 
 		return new OutputStreamWriter(new FileOutputStream(outputFile));
@@ -53,13 +52,15 @@ public class GeneratorService {
 			return "class.ftl";
 		case REPOSITORY:
 			return "repository.ftl";
+		case SERVICE:
+			return "service.ftl";
 		case CONTROLLER:
 			return "controller.ftl";
 		default:
 			return "";
 		}
 	}
-	
+
 	private String determinePackagePath(PackageType type) {
 		switch (type) {
 		case ENUMERATION:
@@ -68,6 +69,8 @@ public class GeneratorService {
 			return "model";
 		case REPOSITORY:
 			return "repository";
+		case SERVICE:
+			return "service";
 		case CONTROLLER:
 			return "controller";
 		default:

@@ -44,7 +44,7 @@ public class ModelGeneratorService {
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		try {
-			out = generatorService.getAndPrepareWriter(PackageType.MODEL, ClassNamesUtil.toClassName(table.getTableName()));
+			out = generatorService.getAndPrepareWriter(PackageType.MODEL, table.getClassName());
 			context.clear();
 			context.put("class", table);
 			context.put("fields", table.getTableColumns());

@@ -14,35 +14,36 @@ import org.springframework.stereotype.Service;
 import com.codegenerator.jgen.database.model.FMColumn;
 import com.codegenerator.jgen.database.model.FMDatabaseMetadata;
 import com.codegenerator.jgen.database.model.FMTable;
+import com.codegenerator.jgen.generator.ClassNamesUtil;
 import com.codegenerator.jgen.model.PackageType;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
 @Service
-public class RepositoryGeneratorService {
+public class ServiceGeneratorService {
+
 
 	@Autowired
 	public GeneratorService generatorService;
 	
 	private List<String> imports = new ArrayList<>();
-
+	
 	public void generate(FMDatabaseMetadata databaseMetadata) {
-		databaseMetadata.getTables().forEach(table -> generateRepositoryForModelClass(table));
+		databaseMetadata.getTables().forEach(table -> generateServiceForModelClass(table));
 	}
 	
-	
-	private void generateRepositoryForModelClass(FMTable table) {
+	private void generateServiceForModelClass(FMTable table) {
 		final String idType = retrieveIdColumnType(table);
 		
-		Template template = generatorService.retrieveTemplate(PackageType.REPOSITORY);
-		imports.add(String.format("generated.model.%s", table.getClassName()));
+		Template template = generatorService.retrieveTemplate(PackageType.SERVICE);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		try {
-			out = generatorService.getAndPrepareWriter(PackageType.REPOSITORY, table.getClassName().concat("Repository"));
+			out = generatorService.getAndPrepareWriter(PackageType.SERVICE, table.getClassName().concat("Service"));
 			context.clear();
-			context.put("repoClassName", table.getClassName());
+			context.put("className", table.getClassName());
+			context.put("fieldName", ClassNamesUtil.toFieldName(table.getClassName()));
 			context.put("idType", idType);
 			context.put("imports", imports);
 			template.process(context, out);
@@ -62,10 +63,8 @@ public class RepositoryGeneratorService {
 		
 	}
 	
-	
 	private String retrieveIdColumnType(FMTable table) {
 		final Optional<FMColumn> idColumn = table.getTableColumns().stream().filter(column -> column.getIsPrimaryKey()).findAny();
 		return idColumn.get().getColumnTypeName();
 	}
-	
 }

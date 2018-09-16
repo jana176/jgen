@@ -13,6 +13,7 @@ import com.codegenerator.jgen.database.model.FMDatabaseMetadata;
 import com.codegenerator.jgen.database.service.DatabaseMetadataService;
 import com.codegenerator.jgen.generator.service.ModelGeneratorService;
 import com.codegenerator.jgen.generator.service.RepositoryGeneratorService;
+import com.codegenerator.jgen.generator.service.ServiceGeneratorService;
 
 @RestController
 @RequestMapping("/jgen")
@@ -26,6 +27,9 @@ public class JGenController {
 	
 	@Autowired
 	public RepositoryGeneratorService repositoryGeneratorService;
+	
+	@Autowired
+	public ServiceGeneratorService serviceGeneratorService;
 
 	@PostMapping("/generate")
 	public ResponseEntity<?> generateDatabaseMetadata() throws SQLException {
@@ -33,6 +37,7 @@ public class JGenController {
 		FMDatabaseMetadata metadata = databaseMetadataService.retrieveDatabaseMetadata();
 		modelGeneratorService.generate(metadata);
 		repositoryGeneratorService.generate(metadata);
+		serviceGeneratorService.generate(metadata);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 

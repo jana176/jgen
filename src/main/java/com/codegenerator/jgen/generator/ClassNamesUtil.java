@@ -13,7 +13,10 @@ public final class ClassNamesUtil {
 	public static String toClassName(String tableName) {
 		StringBuilder builder = new StringBuilder();
 
-		String parts[] = tableName.split("_");
+		String newTableName = defineSingular(tableName);
+
+		String parts[] = newTableName.split("_");
+
 		List<String> listedParts = Arrays.asList(parts);
 		listedParts.forEach(part -> {
 			String capitalizedWord = part.substring(0, 1) + part.substring(1).toLowerCase();
@@ -55,4 +58,11 @@ public final class ClassNamesUtil {
 		return clearedParts;
 	}
 
+	private static String defineSingular(final String plural) {
+		if (plural.substring(plural.length() - 1).equals("S")) {
+			return plural.substring(0, plural.length() - 1);
+		} else {
+			return plural;
+		}
+	}
 }
