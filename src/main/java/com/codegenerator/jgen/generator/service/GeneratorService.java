@@ -38,7 +38,7 @@ public class GeneratorService {
 	public Writer getAndPrepareWriter(PackageType packageType, String className) throws IOException {
 		System.out.println();
 		File outputFile = new File(BASE_PATH + File.separator + "src/main/java/generated" + File.separator
-				+ packageType.toString().toLowerCase() + File.separator + className
+				+ determinePackagePath(packageType) + File.separator + className
 				+ ".java");
 		outputFile.getParentFile().mkdirs();
 
@@ -47,7 +47,7 @@ public class GeneratorService {
 
 	private String determineTemplateName(PackageType type) {
 		switch (type) {
-		case ENUM:
+		case ENUMERATION:
 			return "enum.ftl";
 		case MODEL:
 			return "class.ftl";
@@ -55,6 +55,21 @@ public class GeneratorService {
 			return "repository.ftl";
 		case CONTROLLER:
 			return "controller.ftl";
+		default:
+			return "";
+		}
+	}
+	
+	private String determinePackagePath(PackageType type) {
+		switch (type) {
+		case ENUMERATION:
+			return "model" + File.separator + "enumeration";
+		case MODEL:
+			return "model";
+		case REPOSITORY:
+			return "repository";
+		case CONTROLLER:
+			return "controller";
 		default:
 			return "";
 		}

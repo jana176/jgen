@@ -2,7 +2,7 @@ package com.codegenerator.jgen.model;
 
 public enum PackageType {
 	
-	ENUM,
+	ENUMERATION,
 	MODEL,
 	REPOSITORY,
 	SERVICE,

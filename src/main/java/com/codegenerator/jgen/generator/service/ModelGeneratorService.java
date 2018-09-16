@@ -69,6 +69,7 @@ public class ModelGeneratorService {
 	private void preprocessColumn(FMColumn column) {
 		if (column.getIsEnum()) {
 			enumGeneratorService.generate(column);
+			imports.add("generated.model.enumeration." + ClassNamesUtil.toClassName(column.getColumnName()));
 		}
 		if (column.getForeignKeyInfo() != null) {
 			FMForeignKey foreignKey = column.getForeignKeyInfo();
