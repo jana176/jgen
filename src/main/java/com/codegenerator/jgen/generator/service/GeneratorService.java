@@ -60,6 +60,8 @@ public class GeneratorService {
 			return "pom.ftl";
 		case APPLICATION:
 			return "application.ftl";
+		case YAML:
+			return "yaml.ftl";
 		default:
 			return "";
 		}

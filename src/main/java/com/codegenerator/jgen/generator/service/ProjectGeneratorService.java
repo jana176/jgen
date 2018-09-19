@@ -37,8 +37,9 @@ public class ProjectGeneratorService {
 			createPackages(projectPath);
 			// create pom file with dependencies
 			createPomFile(projectPath, newProjectInfo);
-			sb.append(generateApplicationMainClass(projectPath, newProjectInfo));
-
+			String basepath = generateApplicationMainClass(projectPath, newProjectInfo);
+			sb.append(basepath);
+			createYamlFile(projectPath, newProjectInfo);
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -111,6 +112,31 @@ public class ProjectGeneratorService {
 			}
 		}
 		return mainPackagePath;
+	}
+	
+	private void createYamlFile(String path, NewProjectInfo newProjectInfo) {
+		Template template = generatorService.retrieveTemplate(PackageType.YAML);
+		Writer out = null;
+		Map<String, Object> context = new HashMap<String, Object>();
+		File outputFile = new File(path + "\\src\\main\\resources" + File.separator + "application.yml");
+		outputFile.getParentFile().mkdirs();
+		try {
+			out = new OutputStreamWriter(new FileOutputStream(outputFile));
+			context.clear();
+			context.put("database", newProjectInfo);
+			template.process(context, out);
+			out.flush();
+		} catch (TemplateException e) {
+			System.out.println(e);
+		} catch (IOException e) {
+			System.out.println(e);
+		} finally {
+			try {
+				out.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 }

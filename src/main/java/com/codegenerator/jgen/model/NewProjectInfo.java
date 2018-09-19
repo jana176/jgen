@@ -29,4 +29,12 @@ public class NewProjectInfo {
 	
 	@NotEmpty
 	private String basePackageName;
+	
+	private String driverName;
+	
+	private String url;
+	
+	private String username;
+	
+	private String password;
 }

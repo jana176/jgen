@@ -1,5 +1,7 @@
 package com.codegenerator.jgen.generator.service;
 
+import java.io.File;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,10 +42,11 @@ public class MetadataGeneratorService {
 
 	public void generate(String path) {
 		String packageName = "generated";
+		String basePath = path + File.separator + packageName;
 		FMDatabaseMetadata metadata = databaseMetadataService.retrieveDatabaseMetadata();
-		modelGeneratorService.generate(metadata, path, packageName);
-		repositoryGeneratorService.generate(metadata, path, packageName);
-		serviceGeneratorService.generate(metadata, path, packageName);
-		controllerGeneratorService.generate(metadata, path, packageName);
+		modelGeneratorService.generate(metadata, basePath, packageName);
+		repositoryGeneratorService.generate(metadata, basePath, packageName);
+		serviceGeneratorService.generate(metadata, basePath, packageName);
+		controllerGeneratorService.generate(metadata, basePath, packageName);
 	}
 }

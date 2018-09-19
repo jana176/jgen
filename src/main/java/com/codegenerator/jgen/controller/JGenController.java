@@ -38,7 +38,6 @@ public class JGenController {
 		String path = newProjectInfo.getPath().replace("\\\\", "\\");
 		newProjectInfo.setPath(path);
 		String basePackagePath = projectGeneratorService.setUpStructure(newProjectInfo, path);
-		System.out.println("1: " + basePackagePath);
 		metadataGeneratorService.generate(newProjectInfo, basePackagePath);
 		
 		return new ResponseEntity<>(HttpStatus.OK);

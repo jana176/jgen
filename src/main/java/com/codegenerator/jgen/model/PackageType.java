@@ -8,5 +8,6 @@ public enum PackageType {
 	SERVICE,
 	CONTROLLER,
 	POM,
-	APPLICATION
+	APPLICATION,
+	YAML
 }
