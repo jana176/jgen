@@ -1,4 +1,4 @@
-package generated.model;
+package ${packageName};
 
 <#list imports as package>
 import ${package};

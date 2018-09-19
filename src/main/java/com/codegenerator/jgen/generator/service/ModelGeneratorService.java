@@ -1,5 +1,6 @@
 package com.codegenerator.jgen.generator.service;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -31,23 +32,25 @@ public class ModelGeneratorService {
 
 	private List<String> imports = new ArrayList<>();
 
-	public void generate(FMDatabaseMetadata databaseMetadata) {
+	public void generate(FMDatabaseMetadata databaseMetadata, String path, String packageName) {
 		databaseMetadata.getTables().forEach(table -> {
-			table.getTableColumns().forEach(column -> preprocessColumn(column));
-			generateModelClass(table);
+			table.getTableColumns().forEach(column -> preprocessColumn(column, path, packageName));
+			generateModelClass(table, path, packageName);
 		});
 	}
 
-	private void generateModelClass(FMTable table) {
+	private void generateModelClass(FMTable table, String path, String packageName) {
 		prepareTableData(table);
 		Template template = generatorService.retrieveTemplate(PackageType.MODEL);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		try {
-			out = generatorService.getAndPrepareWriter(PackageType.MODEL, table.getClassName());
+			out = generatorService.getAndPrepareWriter(path + File.separator + PackageType.MODEL.toString().toLowerCase() + File.separator + table.getClassName() + ".java");
+			
 			context.clear();
 			context.put("class", table);
 			context.put("fields", table.getTableColumns());
+			context.put("packageName", packageName.concat(".model"));
 			context.put("imports", imports);
 			template.process(context, out);
 			out.flush();
@@ -66,10 +69,10 @@ public class ModelGeneratorService {
 		imports.clear();
 	}
 
-	private void preprocessColumn(FMColumn column) {
+	private void preprocessColumn(FMColumn column, String packagePath, String packageName) {
 		if (column.getIsEnum()) {
-			enumGeneratorService.generate(column);
-			imports.add("generated.model.enumeration." + ClassNamesUtil.toClassName(column.getColumnName()));
+			enumGeneratorService.generate(column, packagePath, packageName);
+			imports.add(packageName.concat(".model.enumeration.") + ClassNamesUtil.toClassName(column.getColumnName()));
 		}
 		if (column.getForeignKeyInfo() != null) {
 			FMForeignKey foreignKey = column.getForeignKeyInfo();

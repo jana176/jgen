@@ -55,7 +55,6 @@ public class DatabaseMetadataExtractor {
 			table.setTableSchema(resultSet.getString("TABLE_CAT"));
 			table.setTableName(resultSet.getString("TABLE_NAME").toUpperCase());
 			table.setClassName(ClassNamesUtil.toClassName(table.getTableName()));
-			System.out.println(table.getClassName());
 			table.setTableType(resultSet.getString("TABLE_TYPE"));
 			tables.add(table);
 		}
@@ -161,7 +160,6 @@ public class DatabaseMetadataExtractor {
 					foreignKey.setFkColumnName(resultSet.getString("FKCOLUMN_NAME").toUpperCase());
 					foreignKey.setUpdateRule(determineUpdateRule(resultSet.getString("UPDATE_RULE")));
 					foreignKey.setDeleteRule(determineDeleteRule(resultSet.getString("DELETE_RULE")));
-					System.out.println("TU JE: " + resultSet.getObject(10));
 
 					table.getTableColumns().stream().forEach(column -> {
 						if (column.getColumnName().equals(foreignKey.getFkColumnName())) {

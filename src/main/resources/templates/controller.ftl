@@ -1,7 +1,8 @@
-package generated.controller;
+package ${packageName};
 
-import generated.model.${className};
-import generated.service.${className}Service;
+<#list imports as package>
+import ${package};
+</#list>
 
 import java.util.Optional;
 

@@ -1,7 +1,8 @@
-package generated.service;
+package ${packageName};
 
-import generated.model.${className};
-import generated.repository.${className}Repository;
+<#list imports as package>
+import ${package};
+</#list>
 
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -6,5 +6,7 @@ public enum PackageType {
 	MODEL,
 	REPOSITORY,
 	SERVICE,
-	CONTROLLER
+	CONTROLLER,
+	POM,
+	APPLICATION
 }

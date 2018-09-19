@@ -14,6 +14,7 @@ import com.codegenerator.jgen.model.PackageType;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
+import lombok.Setter;
 
 @Component
 public class GeneratorService {
@@ -21,7 +22,8 @@ public class GeneratorService {
 	@Autowired
 	public FreeMarkerConfigurer freeMarkerConfigurer;
 
-	private static final String BASE_PATH = new File("").getAbsolutePath();
+	@Setter
+	public String packagePath;
 
 	public Template retrieveTemplate(PackageType packageType) {
 		Configuration config = freeMarkerConfigurer.getConfiguration();
@@ -35,10 +37,8 @@ public class GeneratorService {
 		return template;
 	}
 
-	public Writer getAndPrepareWriter(PackageType packageType, String className) throws IOException {
-		System.out.println();
-		File outputFile = new File(BASE_PATH + File.separator + "src/main/java/generated" + File.separator
-				+ determinePackagePath(packageType) + File.separator + className + ".java");
+	public Writer getAndPrepareWriter(final String packagePath) throws IOException {
+		File outputFile = new File(packagePath);
 		outputFile.getParentFile().mkdirs();
 
 		return new OutputStreamWriter(new FileOutputStream(outputFile));
@@ -56,25 +56,13 @@ public class GeneratorService {
 			return "service.ftl";
 		case CONTROLLER:
 			return "controller.ftl";
+		case POM:
+			return "pom.ftl";
+		case APPLICATION:
+			return "application.ftl";
 		default:
 			return "";
 		}
 	}
 
-	private String determinePackagePath(PackageType type) {
-		switch (type) {
-		case ENUMERATION:
-			return "model" + File.separator + "enumeration";
-		case MODEL:
-			return "model";
-		case REPOSITORY:
-			return "repository";
-		case SERVICE:
-			return "service";
-		case CONTROLLER:
-			return "controller";
-		default:
-			return "";
-		}
-	}
 }

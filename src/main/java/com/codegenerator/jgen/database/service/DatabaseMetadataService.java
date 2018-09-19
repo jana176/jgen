@@ -14,7 +14,6 @@ public class DatabaseMetadataService {
 
 	public FMDatabaseMetadata retrieveDatabaseMetadata() {
 		FMDatabaseMetadata metadata = databaseMetadataExtractor.getDatabaseMetadata();
-		System.out.println("Podaci: " + metadata);
 		return metadata;
 	}
 

@@ -1,5 +1,6 @@
 package com.codegenerator.jgen.generator.service;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.HashMap;
@@ -22,19 +23,20 @@ public class EnumGeneratorService {
 	@Autowired
 	public GeneratorService generatorService;
 	
-	public void generate(FMColumn column) {
-		generateEnum(column.getColumnName(), column.getEnumValues());
+	public void generate(FMColumn column, String packagePath, String packageName) {
+		generateEnum(column.getColumnName(), column.getEnumValues(), packagePath, packageName);
 	}
 	
-	private void generateEnum(String enumName, List<String> enumValues) {
+	private void generateEnum(String enumName, List<String> enumValues, String packagePath, String packageName) {
 		String className = ClassNamesUtil.toClassName(enumName);
 		Template template = generatorService.retrieveTemplate(PackageType.ENUMERATION);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		try {
-			out = generatorService.getAndPrepareWriter(PackageType.ENUMERATION, className);
+			out = generatorService.getAndPrepareWriter(packagePath + File.separator + PackageType.MODEL.toString().toLowerCase()  + File.separator + PackageType.ENUMERATION.toString().toLowerCase()  + File.separator + className + ".java");
 			context.clear();
 			context.put("name", className);
+			context.put("packageName", packageName.concat(".model.enumeration"));
 			context.put("values", enumValues);
 			template.process(context, out);
 			out.flush();
