@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.codegenerator.jgen.database.model.FMDatabaseMetadata;
 import com.codegenerator.jgen.database.service.DatabaseMetadataService;
-import com.codegenerator.jgen.model.NewProjectInfo;
+import com.codegenerator.jgen.generator.model.NewProjectInfo;
 
 @Service
 public class MetadataGeneratorService {

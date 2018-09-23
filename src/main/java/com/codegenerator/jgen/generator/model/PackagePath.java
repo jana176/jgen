@@ -1,4 +1,4 @@
-package com.codegenerator.jgen.model;
+package com.codegenerator.jgen.generator.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

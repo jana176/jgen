@@ -13,8 +13,8 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.codegenerator.jgen.model.NewProjectInfo;
-import com.codegenerator.jgen.model.PackageType;
+import com.codegenerator.jgen.generator.model.NewProjectInfo;
+import com.codegenerator.jgen.generator.model.PackageType;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;

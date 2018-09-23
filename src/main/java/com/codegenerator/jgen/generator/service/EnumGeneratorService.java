@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.codegenerator.jgen.database.model.FMColumn;
 import com.codegenerator.jgen.generator.ClassNamesUtil;
-import com.codegenerator.jgen.model.PackageType;
+import com.codegenerator.jgen.generator.model.PackageType;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;

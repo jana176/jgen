@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import com.codegenerator.jgen.database.model.FMColumn;
 import com.codegenerator.jgen.database.model.FMDatabaseMetadata;
 import com.codegenerator.jgen.database.model.FMTable;
-import com.codegenerator.jgen.model.PackageType;
+import com.codegenerator.jgen.generator.model.PackageType;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
