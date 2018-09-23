@@ -1,5 +1,6 @@
 package com.codegenerator.jgen.generator.service;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -27,23 +28,23 @@ public class RepositoryGeneratorService {
 	
 	private List<String> imports = new ArrayList<>();
 
-	public void generate(FMDatabaseMetadata databaseMetadata) {
-		databaseMetadata.getTables().forEach(table -> generateRepositoryForModelClass(table));
+	public void generate(FMDatabaseMetadata databaseMetadata, String path, String packageName) {
+		databaseMetadata.getTables().forEach(table -> generateRepositoryForModelClass(table, path, packageName));
 	}
 	
-	
-	private void generateRepositoryForModelClass(FMTable table) {
+	private void generateRepositoryForModelClass(FMTable table, String path, String packageName) {
 		final String idType = retrieveIdColumnType(table);
+		imports.add(packageName + ".model." + table.getClassName());
 		
 		Template template = generatorService.retrieveTemplate(PackageType.REPOSITORY);
-		imports.add(String.format("generated.model.%s", table.getClassName()));
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		try {
-			out = generatorService.getAndPrepareWriter(PackageType.REPOSITORY, table.getClassName().concat("Repository"));
+			out = generatorService.getAndPrepareWriter(path + File.separator + PackageType.REPOSITORY.toString().toLowerCase() + File.separator + table.getClassName().concat("Repository") + ".java");
 			context.clear();
 			context.put("repoClassName", table.getClassName());
 			context.put("idType", idType);
+			context.put("packageName", packageName.concat(".repository"));
 			context.put("imports", imports);
 			template.process(context, out);
 			out.flush();

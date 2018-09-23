@@ -1,4 +1,4 @@
-package generated.repository;
+package ${packageName};
 
 <#list imports as package>
 import ${package};
