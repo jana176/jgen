@@ -10,10 +10,13 @@ import java.util.List;
  */
 public final class ClassNamesUtil {
 
-	public static String fromTableToClassName(String tableName) {
+	public static String toClassName(String tableName) {
 		StringBuilder builder = new StringBuilder();
 
-		String parts[] = tableName.split("_");
+		String newTableName = defineSingular(tableName);
+
+		String parts[] = newTableName.split("_");
+
 		List<String> listedParts = Arrays.asList(parts);
 		listedParts.forEach(part -> {
 			String capitalizedWord = part.substring(0, 1) + part.substring(1).toLowerCase();
@@ -23,7 +26,7 @@ public final class ClassNamesUtil {
 		return builder.toString();
 	}
 
-	public static String fromColumnNameToFieldName(String fieldName) {
+	public static String toFieldName(String fieldName) {
 		StringBuilder builder = new StringBuilder();
 		String initialSplit[] = fieldName.split("_", 2);
 
@@ -44,18 +47,22 @@ public final class ClassNamesUtil {
 	}
 
 	public static List<String> separateEnumValues(String enumType) {
-		enumType.substring(0, 3);
-
-		String splits[] = enumType.split(",");
+		String enumerations = enumType.replaceAll("enum", "");
+		String splits[] = enumerations.split(",");
 		List<String> parts = Arrays.asList(splits);
 		List<String> clearedParts = new ArrayList<>();
-		
+
 		parts.forEach(part -> {
 			clearedParts.add(part.replaceAll("\\(", "").replaceAll("\\)", "").replaceAll("'", ""));
 		});
 		return clearedParts;
 	}
 
-
-
+	private static String defineSingular(final String plural) {
+		if (plural.substring(plural.length() - 1).equals("S")) {
+			return plural.substring(0, plural.length() - 1);
+		} else {
+			return plural;
+		}
+	}
 }

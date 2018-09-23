@@ -10,11 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 
-import com.codegenerator.jgen.generator.ClassNamesUtil;
 import com.codegenerator.jgen.model.PackageType;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
+import lombok.Setter;
 
 @Component
 public class GeneratorService {
@@ -22,27 +22,49 @@ public class GeneratorService {
 	@Autowired
 	public FreeMarkerConfigurer freeMarkerConfigurer;
 
-	private static final String BASE_PATH = new File("").getAbsolutePath();
+	@Setter
+	public String packagePath;
 
 	public Template retrieveTemplate(PackageType packageType) {
 		Configuration config = freeMarkerConfigurer.getConfiguration();
 		Template template = null;
+		String templateName = determineTemplateName(packageType);
 		try {
-			template = config.getTemplate("class".concat(".ftl"));
+			template = config.getTemplate(templateName);
 		} catch (IOException e) {
 			System.out.println("Can't find template " + e);
 		}
 		return template;
 	}
 
-	public Writer getAndPrepareWriter(PackageType packageType, String className) throws IOException {
-		System.out.println();
-		File outputFile = new File(BASE_PATH + File.separator + "src/main/java/generated" + File.separator
-				+ packageType.toString().toLowerCase() + File.separator + ClassNamesUtil.fromTableToClassName(className)
-				+ ".java");
+	public Writer getAndPrepareWriter(final String packagePath) throws IOException {
+		File outputFile = new File(packagePath);
 		outputFile.getParentFile().mkdirs();
 
 		return new OutputStreamWriter(new FileOutputStream(outputFile));
+	}
+
+	private String determineTemplateName(PackageType type) {
+		switch (type) {
+		case ENUMERATION:
+			return "enum.ftl";
+		case MODEL:
+			return "class.ftl";
+		case REPOSITORY:
+			return "repository.ftl";
+		case SERVICE:
+			return "service.ftl";
+		case CONTROLLER:
+			return "controller.ftl";
+		case POM:
+			return "pom.ftl";
+		case APPLICATION:
+			return "application.ftl";
+		case YAML:
+			return "yaml.ftl";
+		default:
+			return "";
+		}
 	}
 
 }

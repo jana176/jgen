@@ -1,4 +1,4 @@
-package com.codegenerator.jgen.database.service;
+package com.codegenerator.jgen.database;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import com.codegenerator.jgen.database.model.FMColumn;
 import com.codegenerator.jgen.database.model.FMDatabaseMetadata;
@@ -17,12 +17,12 @@ import com.codegenerator.jgen.database.model.FMForeignKey;
 import com.codegenerator.jgen.database.model.FMTable;
 import com.codegenerator.jgen.generator.ClassNamesUtil;
 
-@Component
+@Repository
 public class DatabaseMetadataExtractor {
-	
+
 	@Autowired
 	public Connection connection;
-	
+
 	public FMDatabaseMetadata getDatabaseMetadata() {
 		FMDatabaseMetadata databaseMetadata = new FMDatabaseMetadata();
 
@@ -36,13 +36,11 @@ public class DatabaseMetadataExtractor {
 			processUniqueColumnsForTable(tables, metadata);
 			processPrimaryKeysForTable(tables, metadata);
 
-			
-			
 			databaseMetadata.setDriverName(metadata.getDriverName());
 			databaseMetadata.setUrl(metadata.getURL());
 			databaseMetadata.setUsername(metadata.getUserName());
 			databaseMetadata.setTables(tables);
-			
+
 		} catch (Exception e) {
 			System.out.println("Error while trying to extract database metadata: " + e);
 		}
@@ -56,6 +54,7 @@ public class DatabaseMetadataExtractor {
 			FMTable table = new FMTable();
 			table.setTableSchema(resultSet.getString("TABLE_CAT"));
 			table.setTableName(resultSet.getString("TABLE_NAME").toUpperCase());
+			table.setClassName(ClassNamesUtil.toClassName(table.getTableName()));
 			table.setTableType(resultSet.getString("TABLE_TYPE"));
 			tables.add(table);
 		}
@@ -97,30 +96,30 @@ public class DatabaseMetadataExtractor {
 
 	}
 
-	
 	private void retrieveEnumValues(FMColumn column, Connection connection) {
-			String query = String.format("SHOW COLUMNS FROM %s LIKE '%s'", column.getTableName(), column.getColumnName());
-			Statement stmt = null;
-			try {
-		        stmt = connection.createStatement();
-		        ResultSet rs = stmt.executeQuery(query);
-		        while (rs.next()) {
-		        	column.setEnumValues(ClassNamesUtil.separateEnumValues(rs.getString("Type")));
-		        }
-		    } catch (SQLException e ) {
-		    	System.out.println(e);
-		    } finally {
-		        if (stmt != null) { try {
+		String query = String.format("SHOW COLUMNS FROM %s LIKE '%s'", column.getTableName(), column.getColumnName());
+		Statement stmt = null;
+		try {
+			stmt = connection.createStatement();
+			ResultSet rs = stmt.executeQuery(query);
+			while (rs.next()) {
+				column.setEnumValues(ClassNamesUtil.separateEnumValues(rs.getString("Type")));
+			}
+		} catch (SQLException e) {
+			System.out.println(e);
+		} finally {
+			if (stmt != null) {
+				try {
 					stmt.close();
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				} }
-		    }
-		
-		
+				}
+			}
+		}
+
 	}
-	
+
 	private void processPrimaryKeysForTable(List<FMTable> tables, DatabaseMetaData metadata) {
 
 		tables.stream().forEach(table -> {
@@ -153,15 +152,14 @@ public class DatabaseMetadataExtractor {
 				while (resultSet.next()) {
 					FMForeignKey foreignKey = new FMForeignKey();
 					foreignKey.setPkTableSchema(resultSet.getString("PKTABLE_CAT"));
-					foreignKey.setPkTableName(resultSet.getString("PKTABLE_NAME"));
-					foreignKey.setPkColumnName(resultSet.getString("PKCOLUMN_NAME"));
+					foreignKey.setPkTableName(resultSet.getString("PKTABLE_NAME").toUpperCase());
+					foreignKey.setPkColumnName(resultSet.getString("PKCOLUMN_NAME").toUpperCase());
 
 					foreignKey.setFkTableSchema(resultSet.getString("FKTABLE_CAT"));
-					foreignKey.setFkTableName(resultSet.getString("FKTABLE_NAME"));
-					foreignKey.setFkColumnName(resultSet.getString("FKCOLUMN_NAME"));
+					foreignKey.setFkTableName(resultSet.getString("FKTABLE_NAME").toUpperCase());
+					foreignKey.setFkColumnName(resultSet.getString("FKCOLUMN_NAME").toUpperCase());
 					foreignKey.setUpdateRule(determineUpdateRule(resultSet.getString("UPDATE_RULE")));
 					foreignKey.setDeleteRule(determineDeleteRule(resultSet.getString("DELETE_RULE")));
-					System.out.println("TU JE: " + resultSet.getObject(10));
 
 					table.getTableColumns().stream().forEach(column -> {
 						if (column.getColumnName().equals(foreignKey.getFkColumnName())) {
@@ -202,53 +200,38 @@ public class DatabaseMetadataExtractor {
 	}
 
 	private String determineUpdateRule(String index) {
-		String rule = "";
 		switch (index) {
 		case "0":
-			rule = "importedNoAction";
-			break;
+			return "importedNoAction";
 		case "1":
-			rule = "importedKeyCascade";
-			break;
+			return "importedKeyCascade";
 		case "2":
-			rule = "importedKeySetNull";
-			break;
+			return "importedKeySetNull";
 		case "3":
-			rule = "importedKeySetDefault";
-			break;
+			return "importedKeySetDefault";
 		case "4":
-			rule = "importedKeyRestrict";
-			break;
+			return "importedKeyRestrict";
 		default:
-			rule = "";
-			break;
+			return "";
 		}
-		return rule;
 	}
 
 	private String determineDeleteRule(String index) {
-		String rule = "";
 		switch (index) {
 		case "0":
-			rule = "importedKeyNoAction";
-			break;
+			return "importedKeyNoAction";
 		case "1":
-			rule = "importedKeyCascade";
-			break;
+			return "importedKeyCascade";
 		case "2":
-			rule = "importedKeySetNull";
-			break;
+			return "importedKeySetNull";
 		case "3":
-			rule = "importedKeyRestrict";
-			break;
+			return "importedKeyRestrict";
 		case "4":
-			rule = "importedKeySetDefault";
-			break;
+			return "importedKeySetDefault";
 		default:
-			rule = "";
-			break;
+			return "";
 		}
-		return rule;
 	}
+
 
 }
