@@ -25,7 +25,7 @@ import freemarker.template.TemplateException;
 public class ControllerGeneratorService {
 
 	@Autowired
-	public GeneratorService generatorService;
+	public BasicGenerator basicGenerator;
 	
 	private List<String> imports = new ArrayList<>();
 	
@@ -38,11 +38,11 @@ public class ControllerGeneratorService {
 		imports.add(packageName + ".model." + table.getClassName());
 		imports.add(packageName + ".service." + table.getClassName() + "Service");
 		
-		Template template = generatorService.retrieveTemplate(PackageType.CONTROLLER);
+		Template template = basicGenerator.retrieveTemplate(PackageType.CONTROLLER);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		try {
-			out = generatorService.getAndPrepareWriter(path + File.separator + PackageType.CONTROLLER.toString().toLowerCase() + File.separator + table.getClassName().concat("Controller") + ".java");
+			out = basicGenerator.getAndPrepareWriter(path + File.separator + PackageType.CONTROLLER.toString().toLowerCase() + File.separator + table.getClassName().concat("Controller") + ".java");
 			context.clear();
 			context.put("className", table.getClassName());
 			context.put("fieldName", ClassNamesUtil.toFieldName(table.getClassName()));

@@ -21,7 +21,7 @@ import freemarker.template.TemplateException;
 public class EnumGeneratorService {
 
 	@Autowired
-	public GeneratorService generatorService;
+	public BasicGenerator basicGenerator;
 	
 	public void generate(FMColumn column, String packagePath, String packageName) {
 		generateEnum(column.getColumnName(), column.getEnumValues(), packagePath, packageName);
@@ -29,11 +29,11 @@ public class EnumGeneratorService {
 	
 	private void generateEnum(String enumName, List<String> enumValues, String packagePath, String packageName) {
 		String className = ClassNamesUtil.toClassName(enumName);
-		Template template = generatorService.retrieveTemplate(PackageType.ENUMERATION);
+		Template template = basicGenerator.retrieveTemplate(PackageType.ENUMERATION);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		try {
-			out = generatorService.getAndPrepareWriter(packagePath + File.separator + PackageType.MODEL.toString().toLowerCase()  + File.separator + PackageType.ENUMERATION.toString().toLowerCase()  + File.separator + className + ".java");
+			out = basicGenerator.getAndPrepareWriter(packagePath + File.separator + PackageType.MODEL.toString().toLowerCase()  + File.separator + PackageType.ENUMERATION.toString().toLowerCase()  + File.separator + className + ".java");
 			context.clear();
 			context.put("name", className);
 			context.put("packageName", packageName.concat(".model.enumeration"));

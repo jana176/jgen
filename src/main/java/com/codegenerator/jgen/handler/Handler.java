@@ -11,6 +11,7 @@ import com.codegenerator.jgen.database.model.FMDatabaseMetadata;
 import com.codegenerator.jgen.database.model.FMForeignKey;
 import com.codegenerator.jgen.database.model.FMTable;
 import com.codegenerator.jgen.generator.ClassNamesUtil;
+import com.codegenerator.jgen.generator.model.NewProjectInfo;
 import com.codegenerator.jgen.handler.model.ClassData;
 import com.codegenerator.jgen.handler.model.DatabaseConnection;
 import com.codegenerator.jgen.handler.model.Enumeration;
@@ -37,6 +38,9 @@ public class Handler {
 		List<ClassData> classes = new ArrayList<>();
 		metadata.getTables().forEach(table -> classes.add(createClassFromTable(table)));
 		project.setClasses(classes);
+		
+		NewProjectInfo npi = new NewProjectInfo();
+		project.setNewProjectInfo(npi);
 		
 		return project;
 	}

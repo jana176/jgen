@@ -24,7 +24,7 @@ import freemarker.template.TemplateException;
 public class RepositoryGeneratorService {
 
 	@Autowired
-	public GeneratorService generatorService;
+	public BasicGenerator basicGenerator;
 	
 	private List<String> imports = new ArrayList<>();
 
@@ -36,11 +36,11 @@ public class RepositoryGeneratorService {
 		final String idType = retrieveIdColumnType(table);
 		imports.add(packageName + ".model." + table.getClassName());
 		
-		Template template = generatorService.retrieveTemplate(PackageType.REPOSITORY);
+		Template template = basicGenerator.retrieveTemplate(PackageType.REPOSITORY);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		try {
-			out = generatorService.getAndPrepareWriter(path + File.separator + PackageType.REPOSITORY.toString().toLowerCase() + File.separator + table.getClassName().concat("Repository") + ".java");
+			out = basicGenerator.getAndPrepareWriter(path + File.separator + PackageType.REPOSITORY.toString().toLowerCase() + File.separator + table.getClassName().concat("Repository") + ".java");
 			context.clear();
 			context.put("repoClassName", table.getClassName());
 			context.put("idType", idType);

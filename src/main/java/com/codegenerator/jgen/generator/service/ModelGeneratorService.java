@@ -25,7 +25,7 @@ import freemarker.template.TemplateException;
 public class ModelGeneratorService {
 
 	@Autowired
-	public GeneratorService generatorService;
+	public BasicGenerator basicGenerator;
 
 	@Autowired
 	public EnumGeneratorService enumGeneratorService;
@@ -41,11 +41,11 @@ public class ModelGeneratorService {
 
 	private void generateModelClass(FMTable table, String path, String packageName) {
 		prepareTableData(table);
-		Template template = generatorService.retrieveTemplate(PackageType.MODEL);
+		Template template = basicGenerator.retrieveTemplate(PackageType.MODEL);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		try {
-			out = generatorService.getAndPrepareWriter(path + File.separator + PackageType.MODEL.toString().toLowerCase() + File.separator + table.getClassName() + ".java");
+			out = basicGenerator.getAndPrepareWriter(path + File.separator + PackageType.MODEL.toString().toLowerCase() + File.separator + table.getClassName() + ".java");
 			
 			context.clear();
 			context.put("class", table);

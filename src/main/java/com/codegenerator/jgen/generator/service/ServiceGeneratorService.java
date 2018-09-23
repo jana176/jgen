@@ -26,7 +26,7 @@ public class ServiceGeneratorService {
 
 
 	@Autowired
-	public GeneratorService generatorService;
+	public BasicGenerator basicGenerator;
 	
 	private List<String> imports = new ArrayList<>();
 	
@@ -40,11 +40,11 @@ public class ServiceGeneratorService {
 		imports.add(packageName + ".model." + table.getClassName());
 		imports.add(packageName + ".repository." + table.getClassName() + "Repository");
 		
-		Template template = generatorService.retrieveTemplate(PackageType.SERVICE);
+		Template template = basicGenerator.retrieveTemplate(PackageType.SERVICE);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		try {
-			out = generatorService.getAndPrepareWriter(path + File.separator + PackageType.SERVICE.toString().toLowerCase() + File.separator + table.getClassName().concat("Service") + ".java");
+			out = basicGenerator.getAndPrepareWriter(path + File.separator + PackageType.SERVICE.toString().toLowerCase() + File.separator + table.getClassName().concat("Service") + ".java");
 			context.clear();
 			context.put("className", table.getClassName());
 			context.put("fieldName", ClassNamesUtil.toFieldName(table.getClassName()));

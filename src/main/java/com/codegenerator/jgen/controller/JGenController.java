@@ -1,7 +1,5 @@
 package com.codegenerator.jgen.controller;
 
-import java.sql.SQLException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.codegenerator.jgen.database.model.FMDatabaseMetadata;
 import com.codegenerator.jgen.database.service.DatabaseMetadataService;
-import com.codegenerator.jgen.generator.model.NewProjectInfo;
-import com.codegenerator.jgen.generator.model.PackagePath;
-import com.codegenerator.jgen.generator.service.MetadataGeneratorService;
+import com.codegenerator.jgen.generator.service.GeneratorService;
 import com.codegenerator.jgen.generator.service.ProjectGeneratorService;
 import com.codegenerator.jgen.handler.Handler;
 import com.codegenerator.jgen.handler.model.Project;
@@ -29,7 +25,7 @@ public class JGenController {
 	public ProjectGeneratorService projectGeneratorService;
 	
 	@Autowired
-	public MetadataGeneratorService metadataGeneratorService;
+	public GeneratorService generatorService;
 	
 	@Autowired
 	public DatabaseMetadataService databaseMetadataService;
@@ -51,26 +47,31 @@ public class JGenController {
 	}
 	
 	@PostMapping("/generate-from-project")
-	public ResponseEntity<?> handleMetadata(@RequestBody final Project project) {
-		System.out.println(project.getDatabaseConnection().getUrl());
-		return new ResponseEntity<>(HttpStatus.OK);
-	}
-	
-	@PostMapping("/generate")
-	public ResponseEntity<?> generateClasses(@RequestBody final PackagePath packagePath) throws SQLException {
-		String path = packagePath.getPath().replace("\\\\", "\\");
-		metadataGeneratorService.generate(path);
-		return new ResponseEntity<>(HttpStatus.OK);
-	}
-	
-	@PostMapping("/project")
-	public ResponseEntity<?> generateNewProject(@Validated @RequestBody final NewProjectInfo newProjectInfo) throws SQLException {
-		String path = newProjectInfo.getPath().replace("\\\\", "\\");
-		newProjectInfo.setPath(path);
-		String basePackagePath = projectGeneratorService.setUpStructure(newProjectInfo, path);
-		metadataGeneratorService.generate(newProjectInfo, basePackagePath);
+	public ResponseEntity<?> handleMetadata(@Validated @RequestBody final Project project) {
+		String path = project.getNewProjectInfo().getBasePath().replace("\\\\", "\\");
+		project.getNewProjectInfo().setBasePath(path);
+		String basePackagePath = projectGeneratorService.setUpStructure(project.getNewProjectInfo(), project.getDatabaseConnection(), path);
+		System.out.println(basePackagePath);
+		//generatorService.generate(project, basePackagePath);
 		
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
+	
+//	@PostMapping("/generate")
+//	public ResponseEntity<?> generateClasses(@RequestBody final PackagePath packagePath) throws SQLException {
+//		String path = packagePath.getPath().replace("\\\\", "\\");
+//		metadataGeneratorService.generate(path);
+//		return new ResponseEntity<>(HttpStatus.OK);
+//	}
+//	
+//	@PostMapping("/project")
+//	public ResponseEntity<?> generateNewProject(@Validated @RequestBody final NewProjectInfo newProjectInfo) throws SQLException {
+//		String path = newProjectInfo.getPath().replace("\\\\", "\\");
+//		newProjectInfo.setPath(path);
+//		String basePackagePath = projectGeneratorService.setUpStructure(newProjectInfo, path);
+//		metadataGeneratorService.generate(newProjectInfo, basePackagePath);
+//		
+//		return new ResponseEntity<>(HttpStatus.OK);
+//	}
 
 }
