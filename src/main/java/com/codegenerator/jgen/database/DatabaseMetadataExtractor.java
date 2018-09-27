@@ -36,9 +36,9 @@ public class DatabaseMetadataExtractor {
 			processUniqueColumnsForTable(tables, metadata);
 			processPrimaryKeysForTable(tables, metadata);
 
-			databaseMetadata.setDriverName(metadata.getDriverName());
+			databaseMetadata.setDriverName("com.mysql.jdbc.Driver");
 			databaseMetadata.setUrl(metadata.getURL());
-			databaseMetadata.setUsername(metadata.getUserName());
+			databaseMetadata.setUsername(metadata.getUserName().split("@")[0]);
 			databaseMetadata.setTables(tables);
 
 		} catch (Exception e) {
@@ -54,7 +54,6 @@ public class DatabaseMetadataExtractor {
 			FMTable table = new FMTable();
 			table.setTableSchema(resultSet.getString("TABLE_CAT"));
 			table.setTableName(resultSet.getString("TABLE_NAME").toUpperCase());
-			table.setClassName(ClassNamesUtil.toClassName(table.getTableName()));
 			table.setTableType(resultSet.getString("TABLE_TYPE"));
 			tables.add(table);
 		}
@@ -162,7 +161,7 @@ public class DatabaseMetadataExtractor {
 					foreignKey.setDeleteRule(determineDeleteRule(resultSet.getString("DELETE_RULE")));
 
 					table.getTableColumns().stream().forEach(column -> {
-						if (column.getColumnName().equals(foreignKey.getFkColumnName())) {
+						if (column.getColumnName().toUpperCase().equals(foreignKey.getFkColumnName().toUpperCase())) {
 							column.setForeignKeyInfo(foreignKey);
 						}
 					});

@@ -7,21 +7,52 @@ import ${package};
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/library")
-public class ${className}Controller {
+public class ${class.className}Controller {
 
 	@Autowired
-	private ${className}Service ${fieldName}Service;
+	private ${class.className}Service ${fieldName}Service;
 	
+	<#if class.controllerOperations.get>
 	@GetMapping(value = "/${fieldName}/{id}")
-    public Optional<${className}> get${className}(@PathVariable("id") ${idType} id) {
+    public Optional<${class.className}> get${class.className}(@PathVariable ${idField.type} id) {
         return ${fieldName}Service.findById(id);
     }
+	</#if>
+	<#if class.controllerOperations.put>
+	
+	@PutMapping(value = "/${fieldName}/{id}")
+    public ResponseEntity<${class.className}> update${class.className}(@RequestBody ${class.className} ${fieldName}, @PathVariable ${idField.type} id) {
+		Optional<${class.className}> found${class.className} = ${fieldName}Service.findById(id);
+		if(found${class.className}.isPresent()) {
+			${fieldName}.setCustomernumber(found${class.className}.get().get${idField.fieldName}());
+			${class.className} saved = ${fieldName}Service.save(${fieldName});	
+			return ResponseEntity.ok(saved);
+		}
+		else
+			return ResponseEntity.notFound().build();
+    }
+	</#if>
+	<#if class.controllerOperations.post>
+	
+	@PostMapping(value = "/${class.tableName?lower_case}")
+    public ${class.className} create${class.className}(@RequestBody ${class.className} ${fieldName}) {
+        return ${fieldName}Service.save(${fieldName});
+    }
+	</#if>
+	<#if class.controllerOperations.delete>
+	
+	@DeleteMapping("/${fieldName}/{id}")
+	public void delete${class.className}(@PathVariable ${idField.type} id) {
+		${fieldName}Service.delete${class.className}(id);
+	}
+	</#if>
+	
+	
     
 }

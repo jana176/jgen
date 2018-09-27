@@ -1,7 +1,7 @@
 package ${packageName};
 
-public enum ${name} {
+public enum ${enum.enumType} {
 
-<#list values as value> ${value}<#if value!=values?last>,</#if></#list>
+<#list enum.values as value> ${value}<#if value!=enum.values?last>,</#if></#list>
 
 }

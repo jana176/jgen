@@ -8,15 +8,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.codegenerator.jgen.database.model.FMColumn;
-import com.codegenerator.jgen.database.model.FMDatabaseMetadata;
-import com.codegenerator.jgen.database.model.FMTable;
 import com.codegenerator.jgen.generator.ClassNamesUtil;
 import com.codegenerator.jgen.generator.model.PackageType;
+import com.codegenerator.jgen.handler.model.ClassData;
+import com.codegenerator.jgen.handler.model.Field;
+import com.codegenerator.jgen.handler.model.Project;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -26,27 +27,36 @@ public class ControllerGeneratorService {
 
 	@Autowired
 	public BasicGenerator basicGenerator;
-	
+
 	private List<String> imports = new ArrayList<>();
-	
-	public void generate(FMDatabaseMetadata databaseMetadata, String path, String packageName) {
-		databaseMetadata.getTables().forEach(table -> generateControllerForModelClass(table, path, packageName));
+
+	public void generate(Project project, String path, String packageName) {
+		List<ClassData> classesToGenerateControllerFor = project.getClasses().stream()
+				.filter(classData -> classData.getGenerateController() && !classData.getRelationshipClass())
+				.collect(Collectors.toList());
+
+		classesToGenerateControllerFor.forEach(classData -> {
+			generateControllerForModelClass(classData, path, packageName);
+		});
 	}
-	
-	private void generateControllerForModelClass(FMTable table, String path, String packageName) {
-		final String idType = retrieveIdColumnType(table);
-		imports.add(packageName + ".model." + table.getClassName());
-		imports.add(packageName + ".service." + table.getClassName() + "Service");
-		
+
+	private void generateControllerForModelClass(ClassData classData, String path, String packageName) {
+		prepareImports(classData);
+		final Field idField = retrieveIdColumn(classData);
+		imports.add(packageName + ".model." + classData.getClassName());
+		imports.add(packageName + ".service." + classData.getClassName() + "Service");
+
 		Template template = basicGenerator.retrieveTemplate(PackageType.CONTROLLER);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		try {
-			out = basicGenerator.getAndPrepareWriter(path + File.separator + PackageType.CONTROLLER.toString().toLowerCase() + File.separator + table.getClassName().concat("Controller") + ".java");
+			out = basicGenerator
+					.getAndPrepareWriter(path + File.separator + PackageType.CONTROLLER.toString().toLowerCase()
+							+ File.separator + classData.getClassName().concat("Controller") + ".java");
 			context.clear();
-			context.put("className", table.getClassName());
-			context.put("fieldName", ClassNamesUtil.toFieldName(table.getClassName()));
-			context.put("idType", idType);
+			context.put("class", classData);
+			context.put("fieldName", ClassNamesUtil.toFieldName(classData.getClassName()));
+			context.put("idField", idField);
 			context.put("packageName", packageName.concat(".controller"));
 			context.put("imports", imports);
 			template.process(context, out);
@@ -64,9 +74,34 @@ public class ControllerGeneratorService {
 		}
 		imports.clear();
 	}
-	
-	private String retrieveIdColumnType(FMTable table) {
-		final Optional<FMColumn> idColumn = table.getTableColumns().stream().filter(column -> column.getIsPrimaryKey()).findAny();
-		return idColumn.get().getColumnTypeName();
+
+	private void prepareImports(ClassData classData) {
+		if (classData.getControllerOperations().getGet()) {
+			imports.add("org.springframework.web.bind.annotation.GetMapping");
+
+		}
+		if (classData.getControllerOperations().getPut()) {
+			imports.add("org.springframework.web.bind.annotation.PutMapping");
+			imports.add("org.springframework.http.ResponseEntity");
+		}
+		if (classData.getControllerOperations().getPost()) {
+			imports.add("org.springframework.web.bind.annotation.PostMapping");
+			imports.add("org.springframework.web.bind.annotation.RequestBody");
+		}
+		if (classData.getControllerOperations().getDelete()) {
+			imports.add("org.springframework.web.bind.annotation.DeleteMapping");
+		}
+	}
+
+	private Field retrieveIdColumn(ClassData classData) {
+		final Optional<Field> idColumn = classData.getFields().stream().filter(field -> field.getIsPrimaryKey())
+				.findAny();
+		if (idColumn.isPresent()) {
+			String idFieldName = idColumn.get().getFieldName();
+			String cap = idFieldName.substring(0, 1).toUpperCase() + idFieldName.substring(1);
+			idColumn.get().setFieldName(cap);
+			return idColumn.get();
+		} else
+			return null;
 	}
 }

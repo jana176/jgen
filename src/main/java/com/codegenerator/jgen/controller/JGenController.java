@@ -52,7 +52,7 @@ public class JGenController {
 		project.getNewProjectInfo().setBasePath(path);
 		String basePackagePath = projectGeneratorService.setUpStructure(project.getNewProjectInfo(), project.getDatabaseConnection(), path);
 		System.out.println(basePackagePath);
-		//generatorService.generate(project, basePackagePath);
+		generatorService.generate(project, basePackagePath);
 		
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
