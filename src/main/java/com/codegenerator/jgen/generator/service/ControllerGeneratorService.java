@@ -32,7 +32,7 @@ public class ControllerGeneratorService {
 
 	public void generate(Project project, String path, String packageName) {
 		List<ClassData> classesToGenerateControllerFor = project.getClasses().stream()
-				.filter(classData -> classData.getGenerateController() && !classData.getRelationshipClass())
+				.filter(classData -> classData.getController().getGenerateController() && !classData.getRelationshipClass())
 				.collect(Collectors.toList());
 
 		classesToGenerateControllerFor.forEach(classData -> {
@@ -76,19 +76,19 @@ public class ControllerGeneratorService {
 	}
 
 	private void prepareImports(ClassData classData) {
-		if (classData.getControllerOperations().getGet()) {
+		if (classData.getController().getControllerOperations().getGet()) {
 			imports.add("org.springframework.web.bind.annotation.GetMapping");
 
 		}
-		if (classData.getControllerOperations().getPut()) {
+		if (classData.getController().getControllerOperations().getPut()) {
 			imports.add("org.springframework.web.bind.annotation.PutMapping");
 			imports.add("org.springframework.http.ResponseEntity");
 		}
-		if (classData.getControllerOperations().getPost()) {
+		if (classData.getController().getControllerOperations().getPost()) {
 			imports.add("org.springframework.web.bind.annotation.PostMapping");
 			imports.add("org.springframework.web.bind.annotation.RequestBody");
 		}
-		if (classData.getControllerOperations().getDelete()) {
+		if (classData.getController().getControllerOperations().getDelete()) {
 			imports.add("org.springframework.web.bind.annotation.DeleteMapping");
 		}
 	}

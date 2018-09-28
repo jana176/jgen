@@ -18,13 +18,13 @@ public class ${class.className}Controller {
 	@Autowired
 	private ${class.className}Service ${fieldName}Service;
 	
-	<#if class.controllerOperations.get>
+	<#if class.controller.controllerOperations.get>
 	@GetMapping(value = "/${fieldName}/{id}")
     public Optional<${class.className}> get${class.className}(@PathVariable ${idField.type} id) {
         return ${fieldName}Service.findById(id);
     }
 	</#if>
-	<#if class.controllerOperations.put>
+	<#if class.controller.controllerOperations.put>
 	
 	@PutMapping(value = "/${fieldName}/{id}")
     public ResponseEntity<${class.className}> update${class.className}(@RequestBody ${class.className} ${fieldName}, @PathVariable ${idField.type} id) {
@@ -38,14 +38,14 @@ public class ${class.className}Controller {
 			return ResponseEntity.notFound().build();
     }
 	</#if>
-	<#if class.controllerOperations.post>
+	<#if class.controller.controllerOperations.post>
 	
 	@PostMapping(value = "/${class.tableName?lower_case}")
     public ${class.className} create${class.className}(@RequestBody ${class.className} ${fieldName}) {
         return ${fieldName}Service.save(${fieldName});
     }
 	</#if>
-	<#if class.controllerOperations.delete>
+	<#if class.controller.controllerOperations.delete>
 	
 	@DeleteMapping("/${fieldName}/{id}")
 	public void delete${class.className}(@PathVariable ${idField.type} id) {

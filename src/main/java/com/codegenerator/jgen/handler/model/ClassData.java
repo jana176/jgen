@@ -24,11 +24,7 @@ public class ClassData {
 	@Builder.Default
 	private Boolean generateRepository = true;
 	
-	@Builder.Default
-	private Boolean generateService = true;
+	private Service service;
 	
-	@Builder.Default
-	private Boolean generateController = true;
-	
-	private ControllerOperations controllerOperations;
+	private Controller controller;
 }

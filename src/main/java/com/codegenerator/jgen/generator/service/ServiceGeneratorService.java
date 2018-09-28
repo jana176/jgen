@@ -32,7 +32,7 @@ public class ServiceGeneratorService {
 	private List<String> imports = new ArrayList<>();
 	
 	public void generate(Project project, String path, String packageName) {
-		List<ClassData> classesToGenerateServiceFor =  project.getClasses().stream().filter(classData -> classData.getGenerateService() && !classData.getRelationshipClass()).collect(Collectors.toList());
+		List<ClassData> classesToGenerateServiceFor =  project.getClasses().stream().filter(classData -> classData.getService().getGenerateService() && !classData.getRelationshipClass()).collect(Collectors.toList());
 		
 		classesToGenerateServiceFor.forEach(classData -> {
 			generateServiceForModelClass(classData, path, packageName);
@@ -51,7 +51,7 @@ public class ServiceGeneratorService {
 		try {
 			out = basicGenerator.getAndPrepareWriter(path + File.separator + PackageType.SERVICE.toString().toLowerCase() + File.separator + classData.getClassName().concat("Service") + ".java");
 			context.clear();
-			context.put("className", classData.getClassName());
+			context.put("class", classData);
 			context.put("fieldName", ClassNamesUtil.toFieldName(classData.getClassName()));
 			context.put("idType", idType);
 			context.put("packageName", packageName.concat(".service"));

@@ -13,12 +13,14 @@ import com.codegenerator.jgen.database.model.FMTable;
 import com.codegenerator.jgen.generator.ClassNamesUtil;
 import com.codegenerator.jgen.generator.model.NewProjectInfo;
 import com.codegenerator.jgen.handler.model.ClassData;
+import com.codegenerator.jgen.handler.model.Controller;
 import com.codegenerator.jgen.handler.model.ControllerOperations;
 import com.codegenerator.jgen.handler.model.DatabaseConnection;
 import com.codegenerator.jgen.handler.model.Enumeration;
 import com.codegenerator.jgen.handler.model.Field;
 import com.codegenerator.jgen.handler.model.Project;
 import com.codegenerator.jgen.handler.model.Property;
+import com.codegenerator.jgen.handler.model.ServiceOperations;
 import com.codegenerator.jgen.handler.model.Visibility;
 
 @Component
@@ -122,8 +124,11 @@ public class Handler {
 		classData.setProperties(properties);
 
 		ControllerOperations co = ControllerOperations.builder().build();
-		classData.setControllerOperations(co);
-		
+		Controller c = Controller.builder().controllerOperations(co).build();
+		classData.setController(c);
+		ServiceOperations so = ServiceOperations.builder().build();
+		com.codegenerator.jgen.handler.model.Service s = com.codegenerator.jgen.handler.model.Service.builder().serviceOperations(so).build();
+		classData.setService(s);
 		return classData;
 	}
 

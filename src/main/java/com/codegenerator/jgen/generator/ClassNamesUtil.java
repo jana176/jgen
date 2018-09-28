@@ -24,10 +24,12 @@ public final class ClassNamesUtil {
 		});
 
 		return builder.toString();
-
 	}
 
 	public static String toFieldName(String fieldName) {
+		String camelCasePattern = "([a-z]+[A-Z]+\\w+)+";
+		if(fieldName.matches(camelCasePattern))
+			return fieldName;
 		StringBuilder builder = new StringBuilder();
 		String initialSplit[] = fieldName.split("_", 2);
 
@@ -45,7 +47,6 @@ public final class ClassNamesUtil {
 		}
 
 		return builder.toString();
-
 	}
 
 	public static List<String> separateEnumValues(String enumType) {
