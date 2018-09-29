@@ -2,6 +2,8 @@ package com.codegenerator.jgen.handler.model;
 
 import java.util.List;
 
+import javax.validation.constraints.NotEmpty;
+
 import lombok.Builder;
 import lombok.Data;
 
@@ -9,6 +11,7 @@ import lombok.Data;
 @Builder
 public class ClassData {
 
+	@NotEmpty
 	private String tableName;
 	
 	private String className;

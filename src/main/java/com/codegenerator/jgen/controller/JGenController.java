@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.codegenerator.jgen.controller.validator.ProjectRequestValidator;
 import com.codegenerator.jgen.database.model.FMDatabaseMetadata;
 import com.codegenerator.jgen.database.service.DatabaseMetadataService;
 import com.codegenerator.jgen.generator.service.GeneratorService;
@@ -33,6 +34,9 @@ public class JGenController {
 	@Autowired
 	public Handler handler;
 	
+	@Autowired
+	public ProjectRequestValidator projectRequestValidator;
+	
 	@GetMapping("/metadata/raw")
 	public ResponseEntity<FMDatabaseMetadata> retrieveMetadata() {
 		FMDatabaseMetadata metadata = databaseMetadataService.retrieveDatabaseMetadata();
@@ -50,6 +54,9 @@ public class JGenController {
 	public ResponseEntity<?> handleMetadata(@Validated @RequestBody final Project project) {
 		String path = project.getNewProjectInfo().getBasePath().replace("\\\\", "\\");
 		project.getNewProjectInfo().setBasePath(path);
+		
+		projectRequestValidator.validate(project);
+		
 		String basePackagePath = projectGeneratorService.setUpStructure(project.getNewProjectInfo(), project.getDatabaseConnection(), path);
 		System.out.println(basePackagePath);
 		generatorService.generate(project, basePackagePath);
