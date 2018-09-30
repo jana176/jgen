@@ -4,15 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.codegenerator.jgen.database.model.FMColumn;
-import com.codegenerator.jgen.generator.ClassNamesUtil;
-import com.codegenerator.jgen.model.PackageType;
+import com.codegenerator.jgen.generator.model.PackageType;
+import com.codegenerator.jgen.handler.model.Enumeration;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -21,26 +19,23 @@ import freemarker.template.TemplateException;
 public class EnumGeneratorService {
 
 	@Autowired
-	public GeneratorService generatorService;
+	public BasicGenerator basicGenerator;
 	
-	public void generate(FMColumn column, String packagePath, String packageName) {
-		generateEnum(column.getColumnName(), column.getEnumValues(), packagePath, packageName);
+	public void generate(Enumeration enumeration, String packagePath, String packageName) {
+		generateEnum(enumeration, packagePath, packageName);
 	}
 	
-	private void generateEnum(String enumName, List<String> enumValues, String packagePath, String packageName) {
-		String className = ClassNamesUtil.toClassName(enumName);
-		Template template = generatorService.retrieveTemplate(PackageType.ENUMERATION);
+	private void generateEnum(Enumeration enumeration, String packagePath, String packageName) {
+		Template template = basicGenerator.retrieveTemplate(PackageType.ENUMERATION);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		try {
-			out = generatorService.getAndPrepareWriter(packagePath + File.separator + PackageType.MODEL.toString().toLowerCase()  + File.separator + PackageType.ENUMERATION.toString().toLowerCase()  + File.separator + className + ".java");
+			out = basicGenerator.getAndPrepareWriter(packagePath + File.separator + PackageType.MODEL.toString().toLowerCase()  + File.separator + PackageType.ENUMERATION.toString().toLowerCase()  + File.separator + enumeration.getEnumType() + ".java");
 			context.clear();
-			context.put("name", className);
+			context.put("enum", enumeration);
 			context.put("packageName", packageName.concat(".model.enumeration"));
-			context.put("values", enumValues);
 			template.process(context, out);
 			out.flush();
-
 		} catch (TemplateException e) {
 			System.out.println(e);
 		} catch (IOException e) {

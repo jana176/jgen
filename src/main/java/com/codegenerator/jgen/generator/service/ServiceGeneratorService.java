@@ -8,15 +8,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.codegenerator.jgen.database.model.FMColumn;
-import com.codegenerator.jgen.database.model.FMDatabaseMetadata;
-import com.codegenerator.jgen.database.model.FMTable;
 import com.codegenerator.jgen.generator.ClassNamesUtil;
-import com.codegenerator.jgen.model.PackageType;
+import com.codegenerator.jgen.generator.model.PackageType;
+import com.codegenerator.jgen.handler.model.ClassData;
+import com.codegenerator.jgen.handler.model.Field;
+import com.codegenerator.jgen.handler.model.Project;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -26,28 +27,32 @@ public class ServiceGeneratorService {
 
 
 	@Autowired
-	public GeneratorService generatorService;
+	public BasicGenerator basicGenerator;
 	
 	private List<String> imports = new ArrayList<>();
 	
-	public void generate(FMDatabaseMetadata databaseMetadata, String path, String packageName) {
-		databaseMetadata.getTables().forEach(table -> generateServiceForModelClass(table, path, packageName));
+	public void generate(Project project, String path, String packageName) {
+		List<ClassData> classesToGenerateServiceFor =  project.getClasses().stream().filter(classData -> classData.getService().getGenerateService() && !classData.getRelationship().getIsRelationshipClass()).collect(Collectors.toList());
+		
+		classesToGenerateServiceFor.forEach(classData -> {
+			generateServiceForModelClass(classData, path, packageName);
+		});
 	}
 	
-	private void generateServiceForModelClass(FMTable table, String path, String packageName) {
-		final String idType = retrieveIdColumnType(table);
+	private void generateServiceForModelClass(ClassData classData, String path, String packageName) {
+		final String idType = retrieveIdColumnType(classData);
 
-		imports.add(packageName + ".model." + table.getClassName());
-		imports.add(packageName + ".repository." + table.getClassName() + "Repository");
+		imports.add(packageName + ".model." + classData.getClassName());
+		imports.add(packageName + ".repository." + classData.getClassName() + "Repository");
 		
-		Template template = generatorService.retrieveTemplate(PackageType.SERVICE);
+		Template template = basicGenerator.retrieveTemplate(PackageType.SERVICE);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		try {
-			out = generatorService.getAndPrepareWriter(path + File.separator + PackageType.SERVICE.toString().toLowerCase() + File.separator + table.getClassName().concat("Service") + ".java");
+			out = basicGenerator.getAndPrepareWriter(path + File.separator + PackageType.SERVICE.toString().toLowerCase() + File.separator + classData.getClassName().concat("Service") + ".java");
 			context.clear();
-			context.put("className", table.getClassName());
-			context.put("fieldName", ClassNamesUtil.toFieldName(table.getClassName()));
+			context.put("class", classData);
+			context.put("fieldName", ClassNamesUtil.toFieldName(classData.getClassName()));
 			context.put("idType", idType);
 			context.put("packageName", packageName.concat(".service"));
 			context.put("imports", imports);
@@ -68,8 +73,8 @@ public class ServiceGeneratorService {
 		
 	}
 	
-	private String retrieveIdColumnType(FMTable table) {
-		final Optional<FMColumn> idColumn = table.getTableColumns().stream().filter(column -> column.getIsPrimaryKey()).findAny();
-		return idColumn.get().getColumnTypeName();
+	private String retrieveIdColumnType(ClassData classData) {
+		final Optional<Field> idColumn = classData.getFields().stream().filter(field -> field.getIsPrimaryKey()).findAny();
+		return idColumn.get().getType();
 	}
 }

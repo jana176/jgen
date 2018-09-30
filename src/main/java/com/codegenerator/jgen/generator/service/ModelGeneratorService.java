@@ -7,16 +7,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.codegenerator.jgen.database.model.FMColumn;
-import com.codegenerator.jgen.database.model.FMDatabaseMetadata;
 import com.codegenerator.jgen.database.model.FMForeignKey;
-import com.codegenerator.jgen.database.model.FMTable;
-import com.codegenerator.jgen.generator.ClassNamesUtil;
-import com.codegenerator.jgen.model.PackageType;
+import com.codegenerator.jgen.generator.model.PackageType;
+import com.codegenerator.jgen.handler.model.ClassData;
+import com.codegenerator.jgen.handler.model.Enumeration;
+import com.codegenerator.jgen.handler.model.Field;
+import com.codegenerator.jgen.handler.model.Project;
+import com.codegenerator.jgen.handler.model.Property;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -25,31 +28,36 @@ import freemarker.template.TemplateException;
 public class ModelGeneratorService {
 
 	@Autowired
-	public GeneratorService generatorService;
+	public BasicGenerator basicGenerator;
 
 	@Autowired
 	public EnumGeneratorService enumGeneratorService;
 
 	private List<String> imports = new ArrayList<>();
 
-	public void generate(FMDatabaseMetadata databaseMetadata, String path, String packageName) {
-		databaseMetadata.getTables().forEach(table -> {
-			table.getTableColumns().forEach(column -> preprocessColumn(column, path, packageName));
-			generateModelClass(table, path, packageName);
+	public void generate(Project project, String path, String packageName) {
+		List<ClassData> classesToGenerateModelFor =  project.getClasses().stream().filter(classData -> !classData.getRelationship().getIsRelationshipClass()).collect(Collectors.toList());
+		
+		classesToGenerateModelFor.forEach(classData -> {
+			generateModelClass(classData, path, packageName);
 		});
 	}
 
-	private void generateModelClass(FMTable table, String path, String packageName) {
-		prepareTableData(table);
-		Template template = generatorService.retrieveTemplate(PackageType.MODEL);
+	private void generateModelClass(ClassData classData, String path, String packageName) {
+		prepareImports(classData);
+		determineEnums(classData, path, packageName);
+		imports.add("javax.persistence.Column");
+		imports.add("javax.persistence.Entity");
+		imports.add("javax.persistence.Table");
+		imports.add("javax.persistence.Id");
+		Template template = basicGenerator.retrieveTemplate(PackageType.MODEL);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		try {
-			out = generatorService.getAndPrepareWriter(path + File.separator + PackageType.MODEL.toString().toLowerCase() + File.separator + table.getClassName() + ".java");
+			out = basicGenerator.getAndPrepareWriter(path + File.separator + PackageType.MODEL.toString().toLowerCase() + File.separator + classData.getClassName() + ".java");
 			
 			context.clear();
-			context.put("class", table);
-			context.put("fields", table.getTableColumns());
+			context.put("class", classData);
 			context.put("packageName", packageName.concat(".model"));
 			context.put("imports", imports);
 			template.process(context, out);
@@ -69,20 +77,42 @@ public class ModelGeneratorService {
 		imports.clear();
 	}
 
-	private void preprocessColumn(FMColumn column, String packagePath, String packageName) {
-		if (column.getIsEnum()) {
-			enumGeneratorService.generate(column, packagePath, packageName);
-			imports.add(packageName.concat(".model.enumeration.") + ClassNamesUtil.toClassName(column.getColumnName()));
-		}
-		if (column.getForeignKeyInfo() != null) {
-			FMForeignKey foreignKey = column.getForeignKeyInfo();
-			foreignKey.setPkTableName(ClassNamesUtil.toClassName(foreignKey.getPkTableName()));
-			foreignKey.setPkColumnName(ClassNamesUtil.toFieldName(foreignKey.getPkTableName()));
-			determineCascadeOperation(foreignKey);
-			imports.add("javax.persistence.ManyToOne");
+	private void determineEnums(ClassData classData, String packagePath, String packageName) {
+		List<Enumeration> allEnums = classData.getEnums();
+		if (allEnums != null) {
+			allEnums.forEach(enumeration -> {
+				enumGeneratorService.generate(enumeration, packagePath, packageName);
+				imports.add(packageName.concat(".model.enumeration.") + enumeration.getEnumType());
+				imports.add("javax.persistence.Enumerated");
+				imports.add("javax.persistence.EnumType");
+			});
+			
 		}
 	}
 
+	private void prepareImports(ClassData classData) {
+		if(!classData.getProperties().isEmpty()) {
+			imports.add("javax.persistence.ManyToOne");
+			imports.add("javax.persistence.FetchType");
+			Optional<Property> any = classData.getProperties().stream().filter(propery -> propery.getIsSelfReferenced()).findFirst();
+			if(any.isPresent()) {
+				imports.add("javax.persistence.OneToMany");
+				imports.add("javax.persistence.JoinColumn");
+				imports.add("javax.persistence.CascadeType");
+				imports.add("java.util.Set");
+				imports.add("java.util.HashSet");
+			}
+		}
+		Optional<Field> result = classData.getFields().stream().filter(field -> field.getType().equals("Date")).findFirst();
+		if(result.isPresent()) {
+			imports.add("java.sql.Date");
+		}
+		Optional<Field> result2 = classData.getFields().stream().filter(field -> field.getType().equals("Blob")).findFirst();
+		if(result2.isPresent()) {
+			imports.add("java.sql.Blob");
+		}
+	}
+	
 	private FMForeignKey determineCascadeOperation(FMForeignKey foreignKey) {
 		final String update = foreignKey.getUpdateRule();
 		final String delete = foreignKey.getDeleteRule();
@@ -99,52 +129,5 @@ public class ModelGeneratorService {
 		return foreignKey;
 	}
 
-	private FMTable prepareTableData(FMTable table) {
-		imports.add("javax.persistence.Column");
-		imports.add("javax.persistence.Entity");
-		imports.add("javax.persistence.Table");
-		imports.add("javax.persistence.Id");
-		table.getTableColumns().forEach(column -> {
-			if (!column.getIsEnum()) {
-				column.setColumnTypeName(determineDataType(column.getColumnTypeName()));
-			} else {
-				imports.add("javax.persistence.Enumerated");
-				imports.add("javax.persistence.EnumType");
-				column.setColumnTypeName(ClassNamesUtil.toClassName(column.getColumnName()));
-			}
-
-			column.setFieldName(ClassNamesUtil.toFieldName(column.getColumnName()));
-		});
-
-		return table;
-	}
-
-	private String determineDataType(String dbDataType) {
-
-		switch (dbDataType) {
-		case "BIT":
-		case "BOOLEAN":
-			return "Boolean";
-		case "CHAR":
-		case "VARCHAR":
-			return "String";
-		case "DOUBLE":
-		case "FLOAT":
-			return "Double";
-		case "INTEGER":
-		case "INT":
-		case "NUMERIC":
-		case "SMALLINT":
-			return "Integer";
-		case "BIGINT":
-			return "Long";
-		case "TIMESTAMP":
-		case "DATE":
-			imports.add("java.sql.Date");
-			return "Date";
-		default:
-			return "Unknown data type";
-		}
-	}
 
 }

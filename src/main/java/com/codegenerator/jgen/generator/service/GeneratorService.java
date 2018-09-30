@@ -1,70 +1,41 @@
 package com.codegenerator.jgen.generator.service;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
+import org.springframework.stereotype.Service;
 
-import com.codegenerator.jgen.model.PackageType;
+import com.codegenerator.jgen.handler.model.Project;
 
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import lombok.Setter;
-
-@Component
+@Service
 public class GeneratorService {
 
 	@Autowired
-	public FreeMarkerConfigurer freeMarkerConfigurer;
+	public ModelGeneratorService modelGeneratorService;
 
-	@Setter
-	public String packagePath;
+	@Autowired
+	public RepositoryGeneratorService repositoryGeneratorService;
 
-	public Template retrieveTemplate(PackageType packageType) {
-		Configuration config = freeMarkerConfigurer.getConfiguration();
-		Template template = null;
-		String templateName = determineTemplateName(packageType);
-		try {
-			template = config.getTemplate(templateName);
-		} catch (IOException e) {
-			System.out.println("Can't find template " + e);
-		}
-		return template;
+	@Autowired
+	public ServiceGeneratorService serviceGeneratorService;
+
+	@Autowired
+	public ControllerGeneratorService controllerGeneratorService;
+
+	public void generate(Project project, String path) {
+		String packageName = project.getNewProjectInfo().getBasePackageName();
+
+		modelGeneratorService.generate(project, path, packageName);
+		repositoryGeneratorService.generate(project, path, packageName);
+		serviceGeneratorService.generate(project, path, packageName);
+		controllerGeneratorService.generate(project, path, packageName);
 	}
 
-	public Writer getAndPrepareWriter(final String packagePath) throws IOException {
-		File outputFile = new File(packagePath);
-		outputFile.getParentFile().mkdirs();
-
-		return new OutputStreamWriter(new FileOutputStream(outputFile));
-	}
-
-	private String determineTemplateName(PackageType type) {
-		switch (type) {
-		case ENUMERATION:
-			return "enum.ftl";
-		case MODEL:
-			return "class.ftl";
-		case REPOSITORY:
-			return "repository.ftl";
-		case SERVICE:
-			return "service.ftl";
-		case CONTROLLER:
-			return "controller.ftl";
-		case POM:
-			return "pom.ftl";
-		case APPLICATION:
-			return "application.ftl";
-		case YAML:
-			return "yaml.ftl";
-		default:
-			return "";
-		}
-	}
-
+//	public void generate(String path) {
+//		String packageName = "generated";
+//		String basePath = path + File.separator + packageName;
+//		FMDatabaseMetadata metadata = databaseMetadataService.retrieveDatabaseMetadata();
+//		modelGeneratorService.generate(metadata, basePath, packageName);
+//		repositoryGeneratorService.generate(metadata, basePath, packageName);
+//		serviceGeneratorService.generate(metadata, basePath, packageName);
+//		controllerGeneratorService.generate(metadata, basePath, packageName);
+//	}
 }

@@ -13,8 +13,9 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.codegenerator.jgen.model.NewProjectInfo;
-import com.codegenerator.jgen.model.PackageType;
+import com.codegenerator.jgen.generator.model.NewProjectInfo;
+import com.codegenerator.jgen.generator.model.PackageType;
+import com.codegenerator.jgen.handler.model.DatabaseConnection;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -23,12 +24,12 @@ import freemarker.template.TemplateException;
 public class ProjectGeneratorService {
 
 	@Autowired
-	public GeneratorService generatorService;
+	public BasicGenerator basicGenerator;
 
 	@Autowired
-	public MetadataGeneratorService metadataGeneratorService;
+	public GeneratorService generatorService;
 
-	public String setUpStructure(NewProjectInfo newProjectInfo, String path) {
+	public String setUpStructure(NewProjectInfo newProjectInfo, DatabaseConnection database, String path) {
 		StringBuilder sb = new StringBuilder();
 		try {
 			// create project
@@ -39,7 +40,7 @@ public class ProjectGeneratorService {
 			createPomFile(projectPath, newProjectInfo);
 			String basepath = generateApplicationMainClass(projectPath, newProjectInfo);
 			sb.append(basepath);
-			createYamlFile(projectPath, newProjectInfo);
+			createYamlFile(projectPath, database);
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -50,7 +51,7 @@ public class ProjectGeneratorService {
 	}
 
 	private void createPomFile(final String projectPath, final NewProjectInfo newProjectInfo) {
-		Template template = generatorService.retrieveTemplate(PackageType.POM);
+		Template template = basicGenerator.retrieveTemplate(PackageType.POM);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		File outputFile = new File(projectPath + File.separator + "pom.xml");
@@ -86,7 +87,7 @@ public class ProjectGeneratorService {
 	}
 
 	private String generateApplicationMainClass(final String projectPath, final NewProjectInfo newProjectInfo) {
-		Template template = generatorService.retrieveTemplate(PackageType.APPLICATION);
+		Template template = basicGenerator.retrieveTemplate(PackageType.APPLICATION);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		String mainPackagePath = projectPath + "\\src\\main\\java\\"
@@ -114,8 +115,8 @@ public class ProjectGeneratorService {
 		return mainPackagePath;
 	}
 	
-	private void createYamlFile(String path, NewProjectInfo newProjectInfo) {
-		Template template = generatorService.retrieveTemplate(PackageType.YAML);
+	private void createYamlFile(String path, DatabaseConnection database) {
+		Template template = basicGenerator.retrieveTemplate(PackageType.YAML);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		File outputFile = new File(path + "\\src\\main\\resources" + File.separator + "application.yml");
@@ -123,7 +124,7 @@ public class ProjectGeneratorService {
 		try {
 			out = new OutputStreamWriter(new FileOutputStream(outputFile));
 			context.clear();
-			context.put("database", newProjectInfo);
+			context.put("database", database);
 			template.process(context, out);
 			out.flush();
 		} catch (TemplateException e) {

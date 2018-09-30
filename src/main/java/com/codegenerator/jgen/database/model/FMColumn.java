@@ -9,7 +9,6 @@ public class FMColumn {
 
 	private String tableName;
 	private String columnName;
-	private String fieldName;
 	private String columnTypeName;
 	private Integer columnSize;
 	private Integer decimalDigits;
