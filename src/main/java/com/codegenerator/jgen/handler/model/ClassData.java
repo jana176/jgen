@@ -22,7 +22,7 @@ public class ClassData {
 	
 	private List<Property> properties;
 	
-	private Boolean relationshipClass;
+	private Relationship relationship;
 	
 	@Builder.Default
 	private Boolean generateRepository = true;

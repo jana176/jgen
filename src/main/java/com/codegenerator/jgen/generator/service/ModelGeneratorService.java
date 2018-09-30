@@ -36,7 +36,7 @@ public class ModelGeneratorService {
 	private List<String> imports = new ArrayList<>();
 
 	public void generate(Project project, String path, String packageName) {
-		List<ClassData> classesToGenerateModelFor =  project.getClasses().stream().filter(classData -> !classData.getRelationshipClass()).collect(Collectors.toList());
+		List<ClassData> classesToGenerateModelFor =  project.getClasses().stream().filter(classData -> !classData.getRelationship().getIsRelationshipClass()).collect(Collectors.toList());
 		
 		classesToGenerateModelFor.forEach(classData -> {
 			generateModelClass(classData, path, packageName);

@@ -30,14 +30,14 @@ public class ${class.className?capitalize} {
 		
 		@ManyToOne(cascade={CascadeType.ALL})
 		@JoinColumn(name="${property.columnName}")
-		${property.visibility?lower_case} ${property.pkClassName} ${property.propertyName};
+		${property.visibility?lower_case} ${property.pkClassName} ${property.fieldName};
 
-		@OneToMany(mappedBy="${property.propertyName}")
+		@OneToMany(mappedBy="${property.fieldName}")
 		private Set<${property.pkClassName}> ${property.pkTableName?lower_case} = new HashSet<${property.pkClassName}>();
 		<#else>
 		
 		@ManyToOne(fetch = FetchType.${property.fetch}<#if property.cascadeType??>cascade = CascadeType.${property.cascadeType}</#if>)
-		${property.visibility?lower_case} ${property.pkClassName} ${property.propertyName?lower_case};
+		${property.visibility?lower_case} ${property.pkClassName} ${property.fieldName?lower_case};
 		</#if>
 	</#list></#if>
 	

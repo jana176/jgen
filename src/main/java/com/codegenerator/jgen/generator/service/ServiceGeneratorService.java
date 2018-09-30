@@ -32,7 +32,7 @@ public class ServiceGeneratorService {
 	private List<String> imports = new ArrayList<>();
 	
 	public void generate(Project project, String path, String packageName) {
-		List<ClassData> classesToGenerateServiceFor =  project.getClasses().stream().filter(classData -> classData.getService().getGenerateService() && !classData.getRelationshipClass()).collect(Collectors.toList());
+		List<ClassData> classesToGenerateServiceFor =  project.getClasses().stream().filter(classData -> classData.getService().getGenerateService() && !classData.getRelationship().getIsRelationshipClass()).collect(Collectors.toList());
 		
 		classesToGenerateServiceFor.forEach(classData -> {
 			generateServiceForModelClass(classData, path, packageName);

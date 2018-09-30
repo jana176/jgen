@@ -20,8 +20,10 @@ import com.codegenerator.jgen.handler.model.Enumeration;
 import com.codegenerator.jgen.handler.model.Field;
 import com.codegenerator.jgen.handler.model.Project;
 import com.codegenerator.jgen.handler.model.Property;
+import com.codegenerator.jgen.handler.model.Relationship;
 import com.codegenerator.jgen.handler.model.ServiceOperations;
-import com.codegenerator.jgen.handler.model.Visibility;
+import com.codegenerator.jgen.handler.model.enumeration.RelationshipType;
+import com.codegenerator.jgen.handler.model.enumeration.Visibility;
 
 @Component
 public class Handler {
@@ -47,7 +49,7 @@ public class Handler {
 		List<ClassData> classes = new ArrayList<>();
 		metadata.getTables().forEach(table -> classes.add(createClassFromTable(table)));
 		project.setClasses(classes);
-
+		determineRelationTables(classes);
 		NewProjectInfo npi = new NewProjectInfo();
 		project.setNewProjectInfo(npi);
 
@@ -55,14 +57,15 @@ public class Handler {
 	}
 
 	public ClassData createClassFromTable(FMTable table) {
+		Relationship relation = Relationship.builder().isRelationshipClass(false).relationshipType(null).build();
 		//@formatter:off
 		ClassData classData = ClassData.builder()
 				.className(ClassNamesUtil.toClassName(table.getTableName()))
 				.tableName(table.getTableName())
-				.relationshipClass(false)
+				.relationship(relation)
 				.build();
 		//@formatter:on
-		
+
 		// get all regular columns aka Fields
 		List<FMColumn> fieldColumns = table.getTableColumns().stream()
 				.filter(column -> (!column.getIsEnum() && column.getForeignKeyInfo() == null))
@@ -111,9 +114,21 @@ public class Handler {
 			//@formatter:off
 			Property property = Property.builder().visibility(Visibility.PRIVATE)
 					.pkTableName(foreignKey.getPkTableName())
-					.columnName(foreignKey.getFkColumnName())
 					.pkClassName(ClassNamesUtil.toClassName(foreignKey.getPkTableName()))
-					.propertyName(ClassNamesUtil.toFieldName(foreignKey.getFkColumnName()))
+					.pkColumnName(foreignKey.getPkColumnName())
+					.columnName(foreignKey.getFkColumnName())
+					.fieldName(ClassNamesUtil.toFieldName(foreignKey.getFkColumnName()))
+					.fetch("LAZY")
+					.orphanRemoval(false)
+					.isSelfReferenced(false)
+					.type(determineDataType(column.getColumnTypeName()))
+					.visibility(Visibility.PRIVATE)
+					.size(column.getColumnSize())
+					.precision(column.getDecimalDigits())
+					.isNullable(column.getIsNullable())
+					.isPrimaryKey(column.getIsPrimaryKey())
+					.isGenerated(column.getIsGenerated())
+					.isUnique(column.getIsUnique())
 					.build();
 			if(column.getTableName().toLowerCase().equals(foreignKey.getPkTableName().toLowerCase())){
 				property.setIsSelfReferenced(true);
@@ -127,9 +142,43 @@ public class Handler {
 		Controller c = Controller.builder().controllerOperations(co).build();
 		classData.setController(c);
 		ServiceOperations so = ServiceOperations.builder().build();
-		com.codegenerator.jgen.handler.model.Service s = com.codegenerator.jgen.handler.model.Service.builder().serviceOperations(so).build();
+		com.codegenerator.jgen.handler.model.Service s = com.codegenerator.jgen.handler.model.Service.builder()
+				.serviceOperations(so).build();
 		classData.setService(s);
 		return classData;
+	}
+
+	private void determineRelationTables(List<ClassData> classes) {
+		List<Property> pkProperties = new ArrayList<>();
+		List<Property> fkProperties = new ArrayList<>();
+
+		classes.forEach(classData -> {
+			classData.getProperties().forEach(property -> {
+				if (!property.getIsSelfReferenced()) {
+					if (property.getIsPrimaryKey()) {
+						pkProperties.add(property);
+					} else
+						fkProperties.add(property);
+				}
+
+			});
+			if (pkProperties.size() >= 2) {
+				System.out
+						.println("Ima bar dva strana kljuca kao primarna, poveznicka tabela sa kompozitnim kljucem! - "
+								+ classData.getTableName());
+				classData.getRelationship().setIsRelationshipClass(true);
+				if (classData.getFields().size() > 0 || classData.getEnums().size() > 0)
+					classData.getRelationship().setRelationshipType(RelationshipType.SEPARATE_CLASS);
+				else
+					classData.getRelationship().setRelationshipType(RelationshipType.MANY_TO_MANY_RELATIONSHIP);
+			}
+			if (fkProperties.size() >= 2) {
+				System.out.println("Ima bar dva strana kljuca ali nisu primarni, MOZDA je poveznicka tablela! - "
+						+ classData.getTableName());
+			}
+			pkProperties.clear();
+			fkProperties.clear();
+		});
 	}
 
 	private String determineDataType(String dbDataType) {

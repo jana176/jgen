@@ -30,7 +30,7 @@ public class RepositoryGeneratorService {
 	private List<String> imports = new ArrayList<>();
 
 	public void generate(Project project, String path, String packageName) {
-		List<ClassData> classesToGenerateRepositoryFor =  project.getClasses().stream().filter(classData -> classData.getGenerateRepository() && !classData.getRelationshipClass()).collect(Collectors.toList());
+		List<ClassData> classesToGenerateRepositoryFor =  project.getClasses().stream().filter(classData -> classData.getGenerateRepository() && !classData.getRelationship().getIsRelationshipClass()).collect(Collectors.toList());
 		
 		classesToGenerateRepositoryFor.forEach(classData -> {
 			generateRepositoryForModelClass(classData, path, packageName);

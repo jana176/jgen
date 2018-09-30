@@ -1,41 +1,30 @@
 package com.codegenerator.jgen.handler.model;
 
-import javax.validation.constraints.NotEmpty;
+import com.codegenerator.jgen.handler.model.enumeration.Visibility;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@Data
-@Builder
-public class Field {
+@Getter
+@EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor
+public class Field extends AbstractAttribute {
 
-	@NotEmpty
-	private Visibility visibility;
-	
-	@NotEmpty
-	private String type;
-	
-	@NotEmpty
-	private Integer size;
-	
-	private Integer precision;
-	
-	@NotEmpty
-	private String fieldName;
-	
-	@NotEmpty
-	private String columnName;
-	
-	@NotEmpty
-	private Boolean isNullable;
-	
-	@NotEmpty
-	private Boolean isPrimaryKey;
-	
-	@NotEmpty
-	private Boolean isUnique;
-	
-	@NotEmpty
-	private Boolean isGenerated;
-	
+	@Builder
+	private Field(Visibility visibility, String type, Integer size, Integer precision, String fieldName,
+			String columnName, Boolean isNullable, Boolean isPrimaryKey, Boolean isUnique, Boolean isGenerated) {
+		this.visibility = visibility;
+		this.type = type;
+		this.size = size;
+		this.precision = precision;
+		this.fieldName = fieldName;
+		this.columnName = columnName;
+		this.isNullable = isNullable;
+		this.isPrimaryKey = isPrimaryKey;
+		this.isUnique = isUnique;
+		this.isGenerated = isGenerated;
+	}
+
 }

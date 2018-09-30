@@ -1,39 +1,56 @@
 package com.codegenerator.jgen.handler.model;
 
-import javax.validation.constraints.NotEmpty;
+import com.codegenerator.jgen.handler.model.enumeration.Visibility;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
-@Builder
-public class Property {
+@Getter
+@Setter
+@EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor
+public class Property extends AbstractAttribute {
 
-	@NotEmpty
-	private Visibility visibility;
-
-	@NotEmpty
-	private String propertyName; // columnName and fkColumnName
-
-	@NotEmpty
-	private String pkClassName; // pkTableName
-
-	@NotEmpty
 	private String pkTableName;
 
-	@NotEmpty
-	private String columnName;
+	private String pkClassName;
 
-	@Builder.Default
-	private String cascadeType = null;
+	private String pkColumnName;
 
-	@Builder.Default
-	private String fetch = "LAZY";
+	private String cascadeType;
 
-	@Builder.Default
-	private Boolean orphanRemoval = false;
+	private String fetch;
 
-	@Builder.Default
-	private Boolean isSelfReferenced = false;
+	private Boolean orphanRemoval;
+
+	private Boolean isSelfReferenced;
+
+	@Builder
+	private Property(Visibility visibility, String type, Integer size, Integer precision, String fieldName,
+			String columnName, Boolean isNullable, Boolean isPrimaryKey, Boolean isUnique, Boolean isGenerated,
+			String pkTableName, String pkClassName, String pkColumnName, String cascadeType, String fetch,
+			Boolean orphanRemoval, Boolean isSelfReferenced) {
+		this.visibility = visibility;
+		this.type = type;
+		this.size = size;
+		this.precision = precision;
+		this.fieldName = fieldName;
+		this.columnName = columnName;
+		this.isNullable = isNullable;
+		this.isPrimaryKey = isPrimaryKey;
+		this.isUnique = isUnique;
+		this.isGenerated = isGenerated;
+		this.pkTableName = pkTableName;
+		this.pkClassName = pkClassName;
+		this.pkColumnName = pkColumnName;
+		this.cascadeType = cascadeType;
+		this.fetch = fetch;
+		this.orphanRemoval = orphanRemoval;
+		this.isSelfReferenced = isSelfReferenced;
+
+	}
 
 }

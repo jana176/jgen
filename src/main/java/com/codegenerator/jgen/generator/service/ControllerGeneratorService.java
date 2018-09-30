@@ -32,7 +32,7 @@ public class ControllerGeneratorService {
 
 	public void generate(Project project, String path, String packageName) {
 		List<ClassData> classesToGenerateControllerFor = project.getClasses().stream()
-				.filter(classData -> classData.getController().getGenerateController() && !classData.getRelationshipClass())
+				.filter(classData -> classData.getController().getGenerateController() && !classData.getRelationship().getIsRelationshipClass())
 				.collect(Collectors.toList());
 
 		classesToGenerateControllerFor.forEach(classData -> {

@@ -4,6 +4,8 @@ import java.util.List;
 
 import javax.validation.constraints.NotEmpty;
 
+import com.codegenerator.jgen.handler.model.enumeration.Visibility;
+
 import lombok.Builder;
 import lombok.Data;
 
