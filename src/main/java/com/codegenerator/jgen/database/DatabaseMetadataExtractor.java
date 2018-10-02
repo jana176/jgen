@@ -53,7 +53,7 @@ public class DatabaseMetadataExtractor {
 		while (resultSet.next()) {
 			FMTable table = new FMTable();
 			table.setTableSchema(resultSet.getString("TABLE_CAT"));
-			table.setTableName(resultSet.getString("TABLE_NAME").toUpperCase());
+			table.setTableName(resultSet.getString("TABLE_NAME"));
 			table.setTableType(resultSet.getString("TABLE_TYPE"));
 			tables.add(table);
 		}
@@ -151,12 +151,12 @@ public class DatabaseMetadataExtractor {
 				while (resultSet.next()) {
 					FMForeignKey foreignKey = new FMForeignKey();
 					foreignKey.setPkTableSchema(resultSet.getString("PKTABLE_CAT"));
-					foreignKey.setPkTableName(resultSet.getString("PKTABLE_NAME").toUpperCase());
-					foreignKey.setPkColumnName(resultSet.getString("PKCOLUMN_NAME").toUpperCase());
+					foreignKey.setPkTableName(resultSet.getString("PKTABLE_NAME"));
+					foreignKey.setPkColumnName(resultSet.getString("PKCOLUMN_NAME"));
 
 					foreignKey.setFkTableSchema(resultSet.getString("FKTABLE_CAT"));
-					foreignKey.setFkTableName(resultSet.getString("FKTABLE_NAME").toUpperCase());
-					foreignKey.setFkColumnName(resultSet.getString("FKCOLUMN_NAME").toUpperCase());
+					foreignKey.setFkTableName(resultSet.getString("FKTABLE_NAME"));
+					foreignKey.setFkColumnName(resultSet.getString("FKCOLUMN_NAME"));
 					foreignKey.setUpdateRule(determineUpdateRule(resultSet.getString("UPDATE_RULE")));
 					foreignKey.setDeleteRule(determineDeleteRule(resultSet.getString("DELETE_RULE")));
 

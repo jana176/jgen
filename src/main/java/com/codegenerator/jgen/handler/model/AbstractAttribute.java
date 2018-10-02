@@ -27,6 +27,7 @@ public abstract class AbstractAttribute {
 	@NotEmpty
 	protected String fieldName;
 	
+	@Setter
 	@NotEmpty
 	protected String columnName;
 	

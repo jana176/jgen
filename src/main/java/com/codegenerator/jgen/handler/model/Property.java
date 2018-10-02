@@ -27,6 +27,8 @@ public class Property extends AbstractAttribute {
 	private Boolean orphanRemoval;
 
 	private Boolean isSelfReferenced;
+	
+	private Boolean isManyToMany;
 
 	@Builder
 	private Property(Visibility visibility, String type, Integer size, Integer precision, String fieldName,

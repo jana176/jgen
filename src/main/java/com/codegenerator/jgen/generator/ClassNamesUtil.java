@@ -10,7 +10,8 @@ import java.util.List;
  */
 public final class ClassNamesUtil {
 
-	public static String toClassName(String tableName) {
+	public static String toClassName(String tableName) {	
+		
 		StringBuilder builder = new StringBuilder();
 
 		String newTableName = defineSingular(tableName);
@@ -19,10 +20,10 @@ public final class ClassNamesUtil {
 
 		List<String> listedParts = Arrays.asList(parts);
 		listedParts.forEach(part -> {
-			String capitalizedWord = part.substring(0, 1) + part.substring(1).toLowerCase();
+			String capitalizedWord = part.substring(0, 1).toUpperCase() + part.substring(1).toLowerCase();
 			builder.append(capitalizedWord);
 		});
-
+		
 		return builder.toString();
 	}
 
@@ -62,7 +63,7 @@ public final class ClassNamesUtil {
 	}
 
 	private static String defineSingular(final String plural) {
-		if (plural.substring(plural.length() - 1).equals("S")) {
+		if (plural.toLowerCase().endsWith("s")) {
 			return plural.substring(0, plural.length() - 1);
 		} else {
 			return plural;

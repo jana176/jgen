@@ -22,6 +22,8 @@ public class ClassData {
 	
 	private List<Property> properties;
 	
+	private Property manyToManyProperty;
+	
 	private Relationship relationship;
 	
 	@Builder.Default

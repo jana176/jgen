@@ -20,6 +20,7 @@ import com.codegenerator.jgen.handler.model.Enumeration;
 import com.codegenerator.jgen.handler.model.Field;
 import com.codegenerator.jgen.handler.model.Project;
 import com.codegenerator.jgen.handler.model.Property;
+import com.codegenerator.jgen.handler.model.enumeration.RelationshipType;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -36,8 +37,28 @@ public class ModelGeneratorService {
 	private List<String> imports = new ArrayList<>();
 
 	public void generate(Project project, String path, String packageName) {
-		List<ClassData> classesToGenerateModelFor =  project.getClasses().stream().filter(classData -> !classData.getRelationship().getIsRelationshipClass()).collect(Collectors.toList());
-		
+		List<ClassData> classesToGenerateModelFor = project.getClasses().stream()
+				.filter(classData -> !classData.getRelationship().getIsRelationshipClass())
+				.collect(Collectors.toList());
+		project.getClasses().forEach(classData -> {
+			// ako je u pitanju posebna klasa
+			if (classData.getRelationship().getRelationshipType() != null && classData.getRelationship()
+					.getRelationshipType().equals(RelationshipType.MANY_TO_MANY_SEPARATE_CLASS)) {
+				classesToGenerateModelFor.add(classData);
+			}
+		});
+
+		List<ClassData> m2mclasses = project.getClasses().stream()
+				.filter(classData -> classData.getRelationship().getIsRelationshipClass()).collect(Collectors.toList());
+		project.getClasses().forEach(classData -> {
+			// ako je u pitanju posebna klasa
+			if (classData.getRelationship().getRelationshipType() != null
+					&& classData.getRelationship().getRelationshipType().equals(RelationshipType.MANY_TO_MANY)) {
+				m2mclasses.add(classData);
+			}
+		});
+		m2mclasses.forEach(classData -> handleManyToManyInfo(project.getClasses(), classData));
+
 		classesToGenerateModelFor.forEach(classData -> {
 			generateModelClass(classData, path, packageName);
 		});
@@ -54,8 +75,9 @@ public class ModelGeneratorService {
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		try {
-			out = basicGenerator.getAndPrepareWriter(path + File.separator + PackageType.MODEL.toString().toLowerCase() + File.separator + classData.getClassName() + ".java");
-			
+			out = basicGenerator.getAndPrepareWriter(path + File.separator + PackageType.MODEL.toString().toLowerCase()
+					+ File.separator + classData.getClassName() + ".java");
+
 			context.clear();
 			context.put("class", classData);
 			context.put("packageName", packageName.concat(".model"));
@@ -86,33 +108,66 @@ public class ModelGeneratorService {
 				imports.add("javax.persistence.Enumerated");
 				imports.add("javax.persistence.EnumType");
 			});
-			
+
 		}
 	}
 
 	private void prepareImports(ClassData classData) {
-		if(!classData.getProperties().isEmpty()) {
+		if (!classData.getProperties().isEmpty()) {
 			imports.add("javax.persistence.ManyToOne");
 			imports.add("javax.persistence.FetchType");
-			Optional<Property> any = classData.getProperties().stream().filter(propery -> propery.getIsSelfReferenced()).findFirst();
-			if(any.isPresent()) {
+			imports.add("javax.persistence.JoinColumn");
+			Optional<Property> any = classData.getProperties().stream().filter(propery -> propery.getIsSelfReferenced())
+					.findFirst();
+			if (any.isPresent()) {
 				imports.add("javax.persistence.OneToMany");
-				imports.add("javax.persistence.JoinColumn");
 				imports.add("javax.persistence.CascadeType");
 				imports.add("java.util.Set");
 				imports.add("java.util.HashSet");
 			}
 		}
-		Optional<Field> result = classData.getFields().stream().filter(field -> field.getType().equals("Date")).findFirst();
-		if(result.isPresent()) {
+		Optional<Field> result = classData.getFields().stream().filter(field -> field.getType().equals("Date"))
+				.findFirst();
+		if (result.isPresent()) {
 			imports.add("java.sql.Date");
 		}
-		Optional<Field> result2 = classData.getFields().stream().filter(field -> field.getType().equals("Blob")).findFirst();
-		if(result2.isPresent()) {
+		Optional<Field> result2 = classData.getFields().stream().filter(field -> field.getType().equals("Blob"))
+				.findFirst();
+		if (result2.isPresent()) {
 			imports.add("java.sql.Blob");
 		}
+		if(classData.getManyToManyProperty()!= null) {
+			imports.add("java.util.ArrayList");
+			imports.add("java.util.List");
+			imports.add("javax.persistence.ManyToMany");
+			imports.add("javax.persistence.JoinTable");
+			imports.add("javax.persistence.JoinColumn");
+			imports.add("javax.persistence.CascadeType");
+		}
 	}
-	
+
+	private void handleManyToManyInfo(List<ClassData> allClasses, ClassData m2mClass) {
+		Property propertyOne = m2mClass.getProperties().get(0);
+		Property propertyTwo = m2mClass.getProperties().get(1);
+		allClasses.forEach(classData -> {
+			if (propertyOne.getPkTableName().equals(classData.getTableName())) {
+				classData.setManyToManyProperty(propertyTwo);
+				Optional<Field> pkField = classData.getFields().stream().filter(field -> field.getIsPrimaryKey())
+						.findFirst();
+				if (pkField.isPresent())
+					classData.getManyToManyProperty().setColumnName(pkField.get().getColumnName());
+			}
+			if (propertyTwo.getPkTableName().equals(classData.getTableName())) {
+				classData.setManyToManyProperty(propertyOne);
+				Optional<Field> pkField = classData.getFields().stream().filter(field -> field.getIsPrimaryKey())
+						.findFirst();
+				if (pkField.isPresent())
+					classData.getManyToManyProperty().setColumnName(pkField.get().getColumnName());
+			}
+		});
+		
+	}
+
 	private FMForeignKey determineCascadeOperation(FMForeignKey foreignKey) {
 		final String update = foreignKey.getUpdateRule();
 		final String delete = foreignKey.getDeleteRule();
@@ -125,9 +180,8 @@ public class ModelGeneratorService {
 			foreignKey.setCascadeType("REMOVE");
 			imports.add("javax.persistence.CascadeType");
 		}
-		
+
 		return foreignKey;
 	}
-
 
 }

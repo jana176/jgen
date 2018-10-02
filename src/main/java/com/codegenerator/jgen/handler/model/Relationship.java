@@ -12,6 +12,6 @@ public class Relationship {
 	@Builder.Default
 	private Boolean isRelationshipClass = false;
 	
-	private RelationshipType relationshipType; 
+	private RelationshipType relationshipType;
 
 }

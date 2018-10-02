@@ -34,9 +34,15 @@ public class ${class.className?capitalize} {
 
 		@OneToMany(mappedBy="${property.fieldName}")
 		private Set<${property.pkClassName}> ${property.pkTableName?lower_case} = new HashSet<${property.pkClassName}>();
+		<#elseif class.manyToManyProperty??>
+		
+		@ManyToMany(<#if class.manyToManyProperty.cascadeType??>cascade = CascadeType.${class.manyToManyProperty.cascadeType}<#else>cascade = CascadeType.ALL</#if>)
+   		@JoinTable(name = "${class.manyToManyProperty.pkTableName}", joinColumns = { @JoinColumn(name = "${class.manyToManyProperty.columnName}") }, inverseJoinColumns = { @JoinColumn(name = "${class.manyToManyProperty.pkColumnName}") })
+   		${class.manyToManyProperty.visibility?lower_case} List<${class.manyToManyProperty.pkClassName}> ${class.manyToManyProperty.pkClassName?lower_case} = new ArrayList<>();
 		<#else>
 		
 		@ManyToOne(fetch = FetchType.${property.fetch}<#if property.cascadeType??>cascade = CascadeType.${property.cascadeType}</#if>)
+		@JoinColumn(name="${property.columnName}")
 		${property.visibility?lower_case} ${property.pkClassName} ${property.fieldName?lower_case};
 		</#if>
 	</#list></#if>

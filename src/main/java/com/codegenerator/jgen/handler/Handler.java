@@ -63,6 +63,7 @@ public class Handler {
 				.className(ClassNamesUtil.toClassName(table.getTableName()))
 				.tableName(table.getTableName())
 				.relationship(relation)
+				.manyToManyProperty(null)
 				.build();
 		//@formatter:on
 
@@ -168,9 +169,9 @@ public class Handler {
 								+ classData.getTableName());
 				classData.getRelationship().setIsRelationshipClass(true);
 				if (classData.getFields().size() > 0 || classData.getEnums().size() > 0)
-					classData.getRelationship().setRelationshipType(RelationshipType.SEPARATE_CLASS);
+					classData.getRelationship().setRelationshipType(RelationshipType.MANY_TO_MANY_SEPARATE_CLASS);
 				else
-					classData.getRelationship().setRelationshipType(RelationshipType.MANY_TO_MANY_RELATIONSHIP);
+					classData.getRelationship().setRelationshipType(RelationshipType.MANY_TO_MANY);
 			}
 			if (fkProperties.size() >= 2) {
 				System.out.println("Ima bar dva strana kljuca ali nisu primarni, MOZDA je poveznicka tablela! - "
