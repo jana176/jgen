@@ -8,7 +8,7 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "${class.tableName}")
-public class ${class.className?capitalize} {
+public class ${class.className} {
 	<#list class.fields as field>
 	
 		<#if field.isPrimaryKey>
@@ -42,7 +42,7 @@ public class ${class.className?capitalize} {
 		<#else>
 		
 		@ManyToOne(fetch = FetchType.${property.fetch}<#if property.cascadeType??>cascade = CascadeType.${property.cascadeType}</#if>)
-		@JoinColumn(name="${property.columnName}")
+		@JoinColumn(name="${property.pkColumnName}")
 		${property.visibility?lower_case} ${property.pkClassName} ${property.fieldName?lower_case};
 		</#if>
 	</#list></#if>

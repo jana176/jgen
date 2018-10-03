@@ -48,12 +48,11 @@ public class ModelGeneratorService {
 			}
 		});
 
-		List<ClassData> m2mclasses = project.getClasses().stream()
-				.filter(classData -> classData.getRelationship().getIsRelationshipClass()).collect(Collectors.toList());
+		List<ClassData> m2mclasses = new ArrayList<>();
 		project.getClasses().forEach(classData -> {
 			// ako je u pitanju posebna klasa
 			if (classData.getRelationship().getRelationshipType() != null
-					&& classData.getRelationship().getRelationshipType().equals(RelationshipType.MANY_TO_MANY)) {
+					&& classData.getRelationship().getRelationshipType() == RelationshipType.MANY_TO_MANY) {
 				m2mclasses.add(classData);
 			}
 		});
@@ -114,6 +113,8 @@ public class ModelGeneratorService {
 
 	private void prepareImports(ClassData classData) {
 		if (!classData.getProperties().isEmpty()) {
+			System.out.println("***" + classData.getClassName() + "***");
+			classData.getProperties().forEach(p -> System.out.println(p.getColumnName()));
 			imports.add("javax.persistence.ManyToOne");
 			imports.add("javax.persistence.FetchType");
 			imports.add("javax.persistence.JoinColumn");
@@ -147,6 +148,7 @@ public class ModelGeneratorService {
 	}
 
 	private void handleManyToManyInfo(List<ClassData> allClasses, ClassData m2mClass) {
+		System.out.println("Class that has m2m: " + m2mClass.getClassName());
 		Property propertyOne = m2mClass.getProperties().get(0);
 		Property propertyTwo = m2mClass.getProperties().get(1);
 		allClasses.forEach(classData -> {

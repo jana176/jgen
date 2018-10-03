@@ -200,14 +200,21 @@ public class Handler {
 		case "INT":
 		case "NUMERIC":
 		case "SMALLINT":
+		case "SMALLINT UNSIGNED":
+		case "TINYINT UNSIGNED":
+		case "MEDIUMINT UNSIGNED":
 			return "Integer";
 		case "BIGINT":
 			return "Long";
 		case "TIMESTAMP":
 		case "DATE":
+		case "DATETIME":
+		case "YEAR":
 			return "Date";
 		case "MEDIUMBLOB":
 		case "MEDIUMTEXT":
+		case "GEOMETRY":
+		case "BLOB":
 			return "Blob";
 		default:
 			return "Unknown data type";
