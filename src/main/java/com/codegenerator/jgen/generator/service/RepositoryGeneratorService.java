@@ -26,26 +26,30 @@ public class RepositoryGeneratorService {
 
 	@Autowired
 	public BasicGenerator basicGenerator;
-	
+
 	private List<String> imports = new ArrayList<>();
 
 	public void generate(Project project, String path, String packageName) {
-		List<ClassData> classesToGenerateRepositoryFor =  project.getClasses().stream().filter(classData -> classData.getGenerateRepository() && !classData.getRelationship().getIsRelationshipClass()).collect(Collectors.toList());
-		
+		List<ClassData> classesToGenerateRepositoryFor = project.getClasses().stream().filter(
+				classData -> classData.getGenerateRepository() && !classData.getRelationship().getIsRelationshipClass())
+				.collect(Collectors.toList());
+
 		classesToGenerateRepositoryFor.forEach(classData -> {
 			generateRepositoryForModelClass(classData, path, packageName);
 		});
 	}
-	
+
 	private void generateRepositoryForModelClass(ClassData classData, String path, String packageName) {
-		final String idType = retrieveIdColumnType(classData);
+		final String idType = retrieveIdColumnType(classData, packageName);
 		imports.add(packageName + ".model." + classData.getClassName());
-		
+
 		Template template = basicGenerator.retrieveTemplate(PackageType.REPOSITORY);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		try {
-			out = basicGenerator.getAndPrepareWriter(path + File.separator + PackageType.REPOSITORY.toString().toLowerCase() + File.separator + classData.getClassName().concat("Repository") + ".java");
+			out = basicGenerator
+					.getAndPrepareWriter(path + File.separator + PackageType.REPOSITORY.toString().toLowerCase()
+							+ File.separator + classData.getClassName().concat("Repository") + ".java");
 			context.clear();
 			context.put("repoClassName", classData.getClassName());
 			context.put("idType", idType);
@@ -65,13 +69,18 @@ public class RepositoryGeneratorService {
 			}
 		}
 		imports.clear();
-		
+
 	}
-	
-	
-	private String retrieveIdColumnType(ClassData classData) {
-		final Optional<Field> idColumn = classData.getFields().stream().filter(field -> field.getIsPrimaryKey()).findAny();
-		return idColumn.get().getType();
+
+	private String retrieveIdColumnType(ClassData classData, String packageName) {
+		if (!classData.getHasCompositeId()) {
+			final Optional<Field> idColumn = classData.getFields().stream().filter(field -> field.getIsPrimaryKey())
+					.findAny();
+			return idColumn.get().getType();
+		} else {
+			imports.add(packageName + ".model." + classData.getClassName() + "Id");
+			return classData.getClassName() + "Id";
+		}
 	}
-	
+
 }

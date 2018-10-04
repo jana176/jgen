@@ -32,7 +32,8 @@ public class ControllerGeneratorService {
 
 	public void generate(Project project, String path, String packageName) {
 		List<ClassData> classesToGenerateControllerFor = project.getClasses().stream()
-				.filter(classData -> classData.getController().getGenerateController() && !classData.getRelationship().getIsRelationshipClass())
+				.filter(classData -> classData.getController().getGenerateController()
+						&& !classData.getRelationship().getIsRelationshipClass())
 				.collect(Collectors.toList());
 
 		classesToGenerateControllerFor.forEach(classData -> {
@@ -42,7 +43,7 @@ public class ControllerGeneratorService {
 
 	private void generateControllerForModelClass(ClassData classData, String path, String packageName) {
 		prepareImports(classData);
-		final Field idField = retrieveIdColumn(classData);
+		final Field idField = retrieveIdColumn(classData, packageName);
 		imports.add(packageName + ".model." + classData.getClassName());
 		imports.add(packageName + ".service." + classData.getClassName() + "Service");
 
@@ -93,15 +94,24 @@ public class ControllerGeneratorService {
 		}
 	}
 
-	private Field retrieveIdColumn(ClassData classData) {
-		final Optional<Field> idColumn = classData.getFields().stream().filter(field -> field.getIsPrimaryKey())
-				.findAny();
-		if (idColumn.isPresent()) {
-			String idFieldName = idColumn.get().getFieldName();
-			String cap = idFieldName.substring(0, 1).toUpperCase() + idFieldName.substring(1);
-			idColumn.get().setFieldName(cap);
-			return idColumn.get();
-		} else
-			return null;
+	private Field retrieveIdColumn(ClassData classData, String packageName) {
+		if (!classData.getHasCompositeId()) {
+			final Optional<Field> idColumn = classData.getFields().stream().filter(field -> field.getIsPrimaryKey())
+					.findAny();
+			if (idColumn.isPresent()) {
+				String idFieldName = idColumn.get().getFieldName();
+				String cap = idFieldName.substring(0, 1).toUpperCase() + idFieldName.substring(1);
+				idColumn.get().setFieldName(cap);
+				return idColumn.get();
+			} else {
+				return null;
+			}
+		} else {
+			Field compositeField = Field.builder().type(classData.getClassName() + "Id")
+					.fieldName(classData.getClassName() + "Id").build();
+			imports.add(packageName + ".model." + classData.getClassName() + "Id");
+			return compositeField;
+		}
 	}
+
 }

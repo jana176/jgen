@@ -50,6 +50,8 @@ public class BasicGenerator {
 			return "enum.ftl";
 		case MODEL:
 			return "class.ftl";
+		case EMBEDDED_KEY:
+			return "embeddedkey.ftl";
 		case REPOSITORY:
 			return "repository.ftl";
 		case SERVICE:

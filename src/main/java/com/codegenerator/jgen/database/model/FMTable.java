@@ -13,5 +13,6 @@ public class FMTable {
 	private List<FMColumn> tableColumns;
 	private List<FMForeignKey> foreignKeys;
 	private List<String> uniqueColumns;
+	private List<String> compositePrimaryKeyColumns;
 
 }

@@ -25,31 +25,35 @@ import freemarker.template.TemplateException;
 @Service
 public class ServiceGeneratorService {
 
-
 	@Autowired
 	public BasicGenerator basicGenerator;
-	
+
 	private List<String> imports = new ArrayList<>();
-	
+
 	public void generate(Project project, String path, String packageName) {
-		List<ClassData> classesToGenerateServiceFor =  project.getClasses().stream().filter(classData -> classData.getService().getGenerateService() && !classData.getRelationship().getIsRelationshipClass()).collect(Collectors.toList());
-		
+		List<ClassData> classesToGenerateServiceFor = project.getClasses().stream()
+				.filter(classData -> classData.getService().getGenerateService()
+						&& !classData.getRelationship().getIsRelationshipClass())
+				.collect(Collectors.toList());
+
 		classesToGenerateServiceFor.forEach(classData -> {
 			generateServiceForModelClass(classData, path, packageName);
 		});
 	}
-	
+
 	private void generateServiceForModelClass(ClassData classData, String path, String packageName) {
-		final String idType = retrieveIdColumnType(classData);
+		final String idType = retrieveIdColumnType(classData, packageName);
 
 		imports.add(packageName + ".model." + classData.getClassName());
 		imports.add(packageName + ".repository." + classData.getClassName() + "Repository");
-		
+
 		Template template = basicGenerator.retrieveTemplate(PackageType.SERVICE);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		try {
-			out = basicGenerator.getAndPrepareWriter(path + File.separator + PackageType.SERVICE.toString().toLowerCase() + File.separator + classData.getClassName().concat("Service") + ".java");
+			out = basicGenerator
+					.getAndPrepareWriter(path + File.separator + PackageType.SERVICE.toString().toLowerCase()
+							+ File.separator + classData.getClassName().concat("Service") + ".java");
 			context.clear();
 			context.put("class", classData);
 			context.put("fieldName", ClassNamesUtil.toFieldName(classData.getClassName()));
@@ -70,11 +74,17 @@ public class ServiceGeneratorService {
 			}
 		}
 		imports.clear();
-		
+
 	}
-	
-	private String retrieveIdColumnType(ClassData classData) {
-		final Optional<Field> idColumn = classData.getFields().stream().filter(field -> field.getIsPrimaryKey()).findAny();
-		return idColumn.get().getType();
+
+	private String retrieveIdColumnType(ClassData classData, String packageName) {
+		if (!classData.getHasCompositeId()) {
+			final Optional<Field> idColumn = classData.getFields().stream().filter(field -> field.getIsPrimaryKey())
+					.findAny();
+			return idColumn.get().getType();
+		} else {
+			imports.add(packageName + ".model." + classData.getClassName() + "Id");
+			return classData.getClassName() + "Id";
+		}
 	}
 }

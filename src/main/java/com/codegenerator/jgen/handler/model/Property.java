@@ -3,15 +3,13 @@ package com.codegenerator.jgen.handler.model;
 import com.codegenerator.jgen.handler.model.enumeration.Visibility;
 
 import lombok.Builder;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class Property extends AbstractAttribute {
 
 	private String pkTableName;

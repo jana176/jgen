@@ -33,7 +33,7 @@ public class DatabaseMetadataExtractor {
 			List<FMTable> tables = processTables(tableMetaData);
 			processColumnsForTable(tables, metadata);
 			processForeignKeysForTable(tables, metadata);
-			processUniqueColumnsForTable(tables, metadata);
+			processIndexedColumnsForTable(tables, metadata);
 			processPrimaryKeysForTable(tables, metadata);
 
 			databaseMetadata.setDriverName("com.mysql.jdbc.Driver");
@@ -176,8 +176,10 @@ public class DatabaseMetadataExtractor {
 
 	}
 
-	private void processUniqueColumnsForTable(List<FMTable> tables, DatabaseMetaData metadata) {
+	private void processIndexedColumnsForTable(List<FMTable> tables, DatabaseMetaData metadata) {
 		tables.stream().forEach(table -> {
+			table.setCompositePrimaryKeyColumns(new ArrayList<>());
+			List<String> primaryKeysPerTable = new ArrayList<>();
 			try {
 				ResultSet resultSet = metadata.getIndexInfo(null, null, table.getTableName(), true, false);
 				List<String> uniqueColumns = new ArrayList<>();
@@ -189,11 +191,20 @@ public class DatabaseMetadataExtractor {
 							column.setIsUnique(true);
 						}
 					});
+					if (resultSet.getString("INDEX_NAME").equals("PRIMARY")) {
+						primaryKeysPerTable.add(resultSet.getString("COLUMN_NAME"));
+					}
 				}
 				table.setUniqueColumns(uniqueColumns);
 			} catch (SQLException e) {
-				System.out.println("Error while trying to fetch unique columns for tables: " + e);
+				System.out.println("Error while trying to fetch indexes for tables: " + e);
 			}
+			if (primaryKeysPerTable.size() >= 2) {
+				 System.out.println("Primarni kljuc je kompozitni! - " +
+				 table.getTableName());
+				table.getCompositePrimaryKeyColumns().addAll(primaryKeysPerTable);
+			}
+			primaryKeysPerTable.clear();
 		});
 
 	}
@@ -231,6 +242,5 @@ public class DatabaseMetadataExtractor {
 			return "";
 		}
 	}
-
 
 }

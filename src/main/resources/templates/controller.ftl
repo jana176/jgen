@@ -31,7 +31,7 @@ public class ${class.className}Controller {
 		Optional<${class.className}> found${class.className} = ${fieldName}Service.findById(id);
 		if(found${class.className}.isPresent()) {
 			${fieldName}.setCustomernumber(found${class.className}.get().get${idField.fieldName}());
-			${class.className} saved = ${fieldName}Service.save(${fieldName});	
+			${class.className} saved = ${fieldName}Service.save(${fieldName});
 			return ResponseEntity.ok(saved);
 		}
 		else

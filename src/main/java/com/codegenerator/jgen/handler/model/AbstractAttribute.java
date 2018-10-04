@@ -4,12 +4,11 @@ import javax.validation.constraints.NotEmpty;
 
 import com.codegenerator.jgen.handler.model.enumeration.Visibility;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
-@EqualsAndHashCode
+@NoArgsConstructor
+@Data
 public abstract class AbstractAttribute {
 
 	@NotEmpty
@@ -23,11 +22,9 @@ public abstract class AbstractAttribute {
 	
 	protected Integer precision;
 	
-	@Setter
 	@NotEmpty
 	protected String fieldName;
 	
-	@Setter
 	@NotEmpty
 	protected String columnName;
 	

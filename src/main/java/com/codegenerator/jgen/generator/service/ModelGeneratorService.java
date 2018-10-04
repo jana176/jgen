@@ -10,8 +10,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import com.codegenerator.jgen.database.model.FMForeignKey;
 import com.codegenerator.jgen.generator.model.PackageType;
@@ -33,6 +35,9 @@ public class ModelGeneratorService {
 
 	@Autowired
 	public EnumGeneratorService enumGeneratorService;
+
+	@Autowired
+	public CompositeKeyModelGeneratorService compositeKeyModelGeneratorService;
 
 	private List<String> imports = new ArrayList<>();
 
@@ -63,13 +68,13 @@ public class ModelGeneratorService {
 		});
 	}
 
-	private void generateModelClass(ClassData classData, String path, String packageName) {
-		prepareImports(classData);
+	private void generateModelClass(ClassData classData, String path, String packageName) {	
 		determineEnums(classData, path, packageName);
+		determineCompositeKeys(classData,  path, packageName);
+		prepareImports(classData);
 		imports.add("javax.persistence.Column");
 		imports.add("javax.persistence.Entity");
 		imports.add("javax.persistence.Table");
-		imports.add("javax.persistence.Id");
 		Template template = basicGenerator.retrieveTemplate(PackageType.MODEL);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
@@ -112,9 +117,13 @@ public class ModelGeneratorService {
 	}
 
 	private void prepareImports(ClassData classData) {
-		if (!classData.getProperties().isEmpty()) {
-			System.out.println("***" + classData.getClassName() + "***");
-			classData.getProperties().forEach(p -> System.out.println(p.getColumnName()));
+		if (!classData.getFields().isEmpty()) {
+			Optional<Field> pks = classData.getFields().stream().filter(f -> f.getIsPrimaryKey()).findFirst();
+			if (pks.isPresent()) {
+				imports.add("javax.persistence.Id");
+			}
+		}
+		if (!classData.getProperties().isEmpty() && !classData.getHasCompositeId()) {
 			imports.add("javax.persistence.ManyToOne");
 			imports.add("javax.persistence.FetchType");
 			imports.add("javax.persistence.JoinColumn");
@@ -137,13 +146,16 @@ public class ModelGeneratorService {
 		if (result2.isPresent()) {
 			imports.add("java.sql.Blob");
 		}
-		if(classData.getManyToManyProperty()!= null) {
+		if (classData.getManyToManyProperty() != null) {
 			imports.add("java.util.ArrayList");
 			imports.add("java.util.List");
 			imports.add("javax.persistence.ManyToMany");
 			imports.add("javax.persistence.JoinTable");
 			imports.add("javax.persistence.JoinColumn");
 			imports.add("javax.persistence.CascadeType");
+		}
+		if(classData.getHasCompositeId()) {
+			imports.add("javax.persistence.EmbeddedId");
 		}
 	}
 
@@ -167,7 +179,23 @@ public class ModelGeneratorService {
 					classData.getManyToManyProperty().setColumnName(pkField.get().getColumnName());
 			}
 		});
-		
+
+	}
+
+	private ClassData determineCompositeKeys(ClassData classData, String path, String packageName) {
+		if (CollectionUtils.isEmpty(classData.getCompositePks()) || classData.getCompositePks() == null) {
+			return classData;
+		} else {
+			System.out.println("Class that has composite key: " + classData.getClassName());
+			compositeKeyModelGeneratorService.generate(classData, classData.getCompositePks(), path, packageName);
+			classData.setHasCompositeId(true);
+			classData.getCompositePks().forEach(pk -> {
+				classData.getFields().removeIf(f -> f.getColumnName().equals(pk));
+				classData.getProperties().removeIf(p -> p.getColumnName().equals(pk));
+
+			});
+			return classData;
+		}
 	}
 
 	private FMForeignKey determineCascadeOperation(FMForeignKey foreignKey) {

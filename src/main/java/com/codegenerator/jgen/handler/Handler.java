@@ -2,6 +2,7 @@ package com.codegenerator.jgen.handler;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
@@ -64,6 +65,8 @@ public class Handler {
 				.tableName(table.getTableName())
 				.relationship(relation)
 				.manyToManyProperty(null)
+				.compositePks(new ArrayList<>())
+				.hasCompositeId(false)
 				.build();
 		//@formatter:on
 
@@ -146,6 +149,21 @@ public class Handler {
 		com.codegenerator.jgen.handler.model.Service s = com.codegenerator.jgen.handler.model.Service.builder()
 				.serviceOperations(so).build();
 		classData.setService(s);
+		
+		// get all composite PK's
+		if(table.getCompositePrimaryKeyColumns() != null) {
+			table.getCompositePrimaryKeyColumns().forEach(name -> {
+				Optional<Field> pkField = classData.getFields().stream().filter(f -> f.getColumnName().equals(name)).findFirst();
+				if(pkField.isPresent()) {
+					classData.getCompositePks().add(pkField.get().getColumnName());
+				}
+				Optional<Property> pkProperty = classData.getProperties().stream().filter(p -> p.getColumnName().equals(name)).findFirst();
+				if(pkProperty.isPresent()) {
+					classData.getCompositePks().add(pkProperty.get().getColumnName());
+				}
+			});
+		}
+		
 		return classData;
 	}
 
@@ -164,9 +182,9 @@ public class Handler {
 
 			});
 			if (pkProperties.size() >= 2) {
-				System.out
-						.println("Ima bar dva strana kljuca kao primarna, poveznicka tabela sa kompozitnim kljucem! - "
-								+ classData.getTableName());
+//				System.out
+//						.println("Ima bar dva strana kljuca kao primarna, poveznicka tabela sa kompozitnim kljucem! - "
+//								+ classData.getTableName());
 				classData.getRelationship().setIsRelationshipClass(true);
 				if (classData.getFields().size() > 0 || classData.getEnums().size() > 0)
 					classData.getRelationship().setRelationshipType(RelationshipType.MANY_TO_MANY_SEPARATE_CLASS);
@@ -174,8 +192,8 @@ public class Handler {
 					classData.getRelationship().setRelationshipType(RelationshipType.MANY_TO_MANY);
 			}
 			if (fkProperties.size() >= 2) {
-				System.out.println("Ima bar dva strana kljuca ali nisu primarni, MOZDA je poveznicka tablela! - "
-						+ classData.getTableName());
+//				System.out.println("Ima bar dva strana kljuca ali nisu primarni, MOZDA je poveznicka tablela! - "
+//						+ classData.getTableName());
 			}
 			pkProperties.clear();
 			fkProperties.clear();

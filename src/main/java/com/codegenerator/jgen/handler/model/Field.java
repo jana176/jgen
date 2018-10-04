@@ -3,13 +3,13 @@ package com.codegenerator.jgen.handler.model;
 import com.codegenerator.jgen.handler.model.enumeration.Visibility;
 
 import lombok.Builder;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class Field extends AbstractAttribute {
 
 	@Builder

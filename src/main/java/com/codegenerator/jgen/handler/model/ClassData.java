@@ -22,6 +22,11 @@ public class ClassData {
 	
 	private List<Property> properties;
 	
+	private List<String> compositePks;
+	
+	@Builder.Default
+	private Boolean hasCompositeId = false;
+	
 	private Property manyToManyProperty;
 	
 	private Relationship relationship;
