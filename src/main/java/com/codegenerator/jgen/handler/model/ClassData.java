@@ -24,8 +24,7 @@ public class ClassData {
 	
 	private List<String> compositePks;
 	
-	@Builder.Default
-	private Boolean hasCompositeId = false;
+	private CompositeKey compositeKey;
 	
 	private Property manyToManyProperty;
 	

@@ -18,6 +18,8 @@ import com.codegenerator.jgen.generator.model.PackageType;
 import com.codegenerator.jgen.handler.model.ClassData;
 import com.codegenerator.jgen.handler.model.Field;
 import com.codegenerator.jgen.handler.model.Project;
+import com.codegenerator.jgen.handler.model.Relationship;
+import com.codegenerator.jgen.handler.model.enumeration.RelationshipType;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -33,7 +35,7 @@ public class ServiceGeneratorService {
 	public void generate(Project project, String path, String packageName) {
 		List<ClassData> classesToGenerateServiceFor = project.getClasses().stream()
 				.filter(classData -> classData.getService().getGenerateService()
-						&& !classData.getRelationship().getIsRelationshipClass())
+						&& generateService(classData.getRelationship()))
 				.collect(Collectors.toList());
 
 		classesToGenerateServiceFor.forEach(classData -> {
@@ -78,13 +80,23 @@ public class ServiceGeneratorService {
 	}
 
 	private String retrieveIdColumnType(ClassData classData, String packageName) {
-		if (!classData.getHasCompositeId()) {
+		if (classData.getCompositeKey() == null) {
 			final Optional<Field> idColumn = classData.getFields().stream().filter(field -> field.getIsPrimaryKey())
 					.findAny();
 			return idColumn.get().getType();
 		} else {
 			imports.add(packageName + ".model." + classData.getClassName() + "Id");
 			return classData.getClassName() + "Id";
+		}
+	}
+
+	private Boolean generateService(Relationship relationship) {
+		if ((relationship.getRelationshipType() != null
+				&& relationship.getRelationshipType().equals(RelationshipType.MANY_TO_MANY_SEPARATE_CLASS))
+				|| relationship.getRelationshipType() == null) {
+			return true;
+		} else {
+			return false;
 		}
 	}
 }

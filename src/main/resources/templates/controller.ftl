@@ -18,10 +18,17 @@ public class ${class.className}Controller {
 	@Autowired
 	private ${class.className}Service ${fieldName}Service;
 	
-	<#if class.controller.controllerOperations.get>
+	<#if class.controller.controllerOperations.get && !class.compositeKey??>
+
 	@GetMapping(value = "/${fieldName}/{id}")
     public Optional<${class.className}> get${class.className}(@PathVariable ${idField.type} id) {
         return ${fieldName}Service.findById(id);
+    }
+    <#elseif class.controller.controllerOperations.get && class.compositeKey??>
+    @GetMapping(value = "/${fieldName}")
+    public Optional<${class.className}> get${class.className}(<#if compositeKey.fields??><#list compositeKey.fields as field>@RequestParam(value = "${field.columnName}") ${field.columnType} ${field.columnName},</#list></#if><#if compositeKey.properties??><#list compositeKey.properties as property>@RequestParam(value = "${property.columnName}") ${property.columnType} ${property.columnName},</#list></#if>) {
+        ${class.className}Id ${class.className?lower_case} = new ${class.className}Id(<#list compositeKey.fields?? as field>${field.columnName}, </#list><#list compositeKey.properties?? as property>${property.columnName}, </#list>);
+        return ${fieldName}Service.findById(${class.className?lower_case}); 
     }
 	</#if>
 	<#if class.controller.controllerOperations.put>

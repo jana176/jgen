@@ -66,7 +66,7 @@ public class Handler {
 				.relationship(relation)
 				.manyToManyProperty(null)
 				.compositePks(new ArrayList<>())
-				.hasCompositeId(false)
+				.compositeKey(null)
 				.build();
 		//@formatter:on
 

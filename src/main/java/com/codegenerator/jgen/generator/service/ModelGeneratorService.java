@@ -123,7 +123,7 @@ public class ModelGeneratorService {
 				imports.add("javax.persistence.Id");
 			}
 		}
-		if (!classData.getProperties().isEmpty() && !classData.getHasCompositeId()) {
+		if (!classData.getProperties().isEmpty() && classData.getCompositeKey() == null) {
 			imports.add("javax.persistence.ManyToOne");
 			imports.add("javax.persistence.FetchType");
 			imports.add("javax.persistence.JoinColumn");
@@ -154,7 +154,7 @@ public class ModelGeneratorService {
 			imports.add("javax.persistence.JoinColumn");
 			imports.add("javax.persistence.CascadeType");
 		}
-		if(classData.getHasCompositeId()) {
+		if(classData.getCompositeKey() != null) {
 			imports.add("javax.persistence.EmbeddedId");
 		}
 	}
@@ -188,7 +188,6 @@ public class ModelGeneratorService {
 		} else {
 			System.out.println("Class that has composite key: " + classData.getClassName());
 			compositeKeyModelGeneratorService.generate(classData, classData.getCompositePks(), path, packageName);
-			classData.setHasCompositeId(true);
 			classData.getCompositePks().forEach(pk -> {
 				classData.getFields().removeIf(f -> f.getColumnName().equals(pk));
 				classData.getProperties().removeIf(p -> p.getColumnName().equals(pk));

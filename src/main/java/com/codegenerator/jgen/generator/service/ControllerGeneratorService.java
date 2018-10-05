@@ -18,6 +18,8 @@ import com.codegenerator.jgen.generator.model.PackageType;
 import com.codegenerator.jgen.handler.model.ClassData;
 import com.codegenerator.jgen.handler.model.Field;
 import com.codegenerator.jgen.handler.model.Project;
+import com.codegenerator.jgen.handler.model.Relationship;
+import com.codegenerator.jgen.handler.model.enumeration.RelationshipType;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -33,7 +35,7 @@ public class ControllerGeneratorService {
 	public void generate(Project project, String path, String packageName) {
 		List<ClassData> classesToGenerateControllerFor = project.getClasses().stream()
 				.filter(classData -> classData.getController().getGenerateController()
-						&& !classData.getRelationship().getIsRelationshipClass())
+						&& generateController(classData.getRelationship()))
 				.collect(Collectors.toList());
 		String controllerPath = project.getNewProjectInfo().getProjectName();
 		classesToGenerateControllerFor.forEach(classData -> {
@@ -41,7 +43,8 @@ public class ControllerGeneratorService {
 		});
 	}
 
-	private void generateControllerForModelClass(ClassData classData, String path, String packageName, String controllerPath) {
+	private void generateControllerForModelClass(ClassData classData, String path, String packageName,
+			String controllerPath) {
 		prepareImports(classData);
 		final Field idField = retrieveIdColumn(classData, packageName);
 		imports.add(packageName + ".model." + classData.getClassName());
@@ -96,7 +99,7 @@ public class ControllerGeneratorService {
 	}
 
 	private Field retrieveIdColumn(ClassData classData, String packageName) {
-		if (!classData.getHasCompositeId()) {
+		if (classData.getCompositeKey() == null) {
 			final Optional<Field> idColumn = classData.getFields().stream().filter(field -> field.getIsPrimaryKey())
 					.findAny();
 			if (idColumn.isPresent()) {
@@ -112,6 +115,16 @@ public class ControllerGeneratorService {
 					.fieldName(classData.getClassName() + "Id").build();
 			imports.add(packageName + ".model." + classData.getClassName() + "Id");
 			return compositeField;
+		}
+	}
+
+	private Boolean generateController(Relationship relationship) {
+		if ((relationship.getRelationshipType() != null
+				&& relationship.getRelationshipType().equals(RelationshipType.MANY_TO_MANY_SEPARATE_CLASS))
+				|| relationship.getRelationshipType() == null) {
+			return true;
+		} else {
+			return false;
 		}
 	}
 

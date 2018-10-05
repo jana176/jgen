@@ -31,7 +31,7 @@ public class CompositeKeyModelGeneratorService {
 	public void generate(ClassData classData, List<String> compositePks, String path, String packageName) {
 
 		CompositeKey compositeKey = createCompositeKey(classData, compositePks);
-
+		classData.setCompositeKey(compositeKey);
 		generateCompositeKeyModelClass(classData, compositeKey, path, packageName);
 
 	}
