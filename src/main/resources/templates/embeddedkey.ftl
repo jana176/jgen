@@ -4,7 +4,9 @@ package ${packageName};
 import ${package};
 </#list>
 import lombok.Getter;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode
 @Embeddable
 @Getter
 public class ${class.className}Id implements Serializable {
@@ -20,6 +22,5 @@ public class ${class.className}Id implements Serializable {
 	@Column(name = "${property.columnName}")
     private ${property.type} ${property.fieldName};
 	</#list>
-	
 	
 }

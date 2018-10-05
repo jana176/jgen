@@ -11,5 +11,6 @@ public enum PackageType {
 	CONTROLLER,
 	POM,
 	APPLICATION,
-	YAML
+	YAML,
+	NAMING_STRATEGY
 }

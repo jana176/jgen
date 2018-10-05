@@ -64,6 +64,8 @@ public class BasicGenerator {
 			return "application.ftl";
 		case YAML:
 			return "yaml.ftl";
+		case NAMING_STRATEGY:
+			return "naming.ftl";
 		default:
 			return "";
 		}

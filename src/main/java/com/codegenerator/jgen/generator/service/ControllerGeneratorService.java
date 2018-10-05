@@ -35,13 +35,13 @@ public class ControllerGeneratorService {
 				.filter(classData -> classData.getController().getGenerateController()
 						&& !classData.getRelationship().getIsRelationshipClass())
 				.collect(Collectors.toList());
-
+		String controllerPath = project.getNewProjectInfo().getProjectName();
 		classesToGenerateControllerFor.forEach(classData -> {
-			generateControllerForModelClass(classData, path, packageName);
+			generateControllerForModelClass(classData, path, packageName, controllerPath);
 		});
 	}
 
-	private void generateControllerForModelClass(ClassData classData, String path, String packageName) {
+	private void generateControllerForModelClass(ClassData classData, String path, String packageName, String controllerPath) {
 		prepareImports(classData);
 		final Field idField = retrieveIdColumn(classData, packageName);
 		imports.add(packageName + ".model." + classData.getClassName());
@@ -59,6 +59,7 @@ public class ControllerGeneratorService {
 			context.put("fieldName", ClassNamesUtil.toFieldName(classData.getClassName()));
 			context.put("idField", idField);
 			context.put("packageName", packageName.concat(".controller"));
+			context.put("controllerPath", controllerPath);
 			context.put("imports", imports);
 			template.process(context, out);
 			out.flush();

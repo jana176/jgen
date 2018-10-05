@@ -19,10 +19,17 @@ public class GeneratorService {
 
 	@Autowired
 	public ControllerGeneratorService controllerGeneratorService;
+	
+	@Autowired
+	public NamingConventionGeneratorService namingConventionGeneratorService;
 
 	public void generate(Project project, String path) {
 		String packageName = project.getNewProjectInfo().getBasePackageName();
-
+		
+		if(project.getDatabaseConnection().getOverrideNamingConvention()) {
+			namingConventionGeneratorService.generate(path, packageName);
+		}
+		
 		modelGeneratorService.generate(project, path, packageName);
 		repositoryGeneratorService.generate(project, path, packageName);
 		serviceGeneratorService.generate(project, path, packageName);

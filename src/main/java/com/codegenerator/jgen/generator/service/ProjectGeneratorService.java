@@ -40,7 +40,7 @@ public class ProjectGeneratorService {
 			createPomFile(projectPath, newProjectInfo);
 			String basepath = generateApplicationMainClass(projectPath, newProjectInfo);
 			sb.append(basepath);
-			createYamlFile(projectPath, database);
+			createYamlFile(projectPath, database, newProjectInfo.getBasePackageName());
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -115,7 +115,7 @@ public class ProjectGeneratorService {
 		return mainPackagePath;
 	}
 	
-	private void createYamlFile(String path, DatabaseConnection database) {
+	private void createYamlFile(String path, DatabaseConnection database, String basePackageName) {
 		Template template = basicGenerator.retrieveTemplate(PackageType.YAML);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
@@ -125,6 +125,7 @@ public class ProjectGeneratorService {
 			out = new OutputStreamWriter(new FileOutputStream(outputFile));
 			context.clear();
 			context.put("database", database);
+			context.put("package", basePackageName);
 			template.process(context, out);
 			out.flush();
 		} catch (TemplateException e) {

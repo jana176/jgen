@@ -20,4 +20,8 @@ public class DatabaseConnection {
 	
 	@NotEmpty
 	private String password;
+	
+	@Builder.Default
+	private Boolean overrideNamingConvention = false;
+	
 }
