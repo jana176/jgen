@@ -4,12 +4,16 @@ package ${packageName};
 import ${package};
 </#list>
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "${class.tableName}")
 public class ${class.className} {
-<#if class.hasCompositeId>
+<#if class.compositeKey??>
 
 	@EmbeddedId
 	private ${class.className}Id ${class.className?lower_case}Id;

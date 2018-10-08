@@ -3,12 +3,16 @@ package ${packageName};
 <#list imports as package>
 import ${package};
 </#list>
-import lombok.Getter;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 @EqualsAndHashCode
 @Embeddable
-@Getter
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ${class.className}Id implements Serializable {
 
 	private static final long serialVersionUID = 1L;

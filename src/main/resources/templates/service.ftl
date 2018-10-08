@@ -34,10 +34,7 @@ public class ${class.className}Service {
 	<#if class.service.serviceOperations.findById>
 	
 	public void delete${class.className}(${idType} id) {
-		Optional<${class.className}> ${fieldName} = findById(id);
-		if (${fieldName} != null) {
-			${fieldName}Repository.deleteById(id);
-		}
+		${fieldName}Repository.deleteById(id);
 	}
 	</#if>
 	

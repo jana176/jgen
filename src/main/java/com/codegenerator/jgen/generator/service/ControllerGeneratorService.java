@@ -87,7 +87,6 @@ public class ControllerGeneratorService {
 		}
 		if (classData.getController().getControllerOperations().getPut()) {
 			imports.add("org.springframework.web.bind.annotation.PutMapping");
-			imports.add("org.springframework.http.ResponseEntity");
 		}
 		if (classData.getController().getControllerOperations().getPost()) {
 			imports.add("org.springframework.web.bind.annotation.PostMapping");
@@ -106,6 +105,7 @@ public class ControllerGeneratorService {
 				String idFieldName = idColumn.get().getFieldName();
 				String cap = idFieldName.substring(0, 1).toUpperCase() + idFieldName.substring(1);
 				idColumn.get().setFieldName(cap);
+				imports.add("org.springframework.web.bind.annotation.PathVariable");
 				return idColumn.get();
 			} else {
 				return null;
@@ -114,6 +114,7 @@ public class ControllerGeneratorService {
 			Field compositeField = Field.builder().type(classData.getClassName() + "Id")
 					.fieldName(classData.getClassName() + "Id").build();
 			imports.add(packageName + ".model." + classData.getClassName() + "Id");
+			imports.add("org.springframework.web.bind.annotation.RequestParam");
 			return compositeField;
 		}
 	}
