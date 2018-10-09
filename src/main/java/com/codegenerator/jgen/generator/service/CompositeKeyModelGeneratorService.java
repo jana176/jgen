@@ -71,18 +71,15 @@ public class CompositeKeyModelGeneratorService {
 	private CompositeKey createCompositeKey(ClassData classData, List<String> compositePks) {
 		CompositeKey compositeKey = new CompositeKey(classData.getTableName(), new ArrayList<Field>(),
 				new ArrayList<Property>());
-		System.out.println("***" + classData.getTableName() + "***");
 		compositePks.stream().forEach(ck -> {
 			classData.getFields().stream().forEach(field -> {
 				if (field.getColumnName().equals(ck)) {
 					compositeKey.getFields().add(field);
-					System.out.println("Field column that is pk: " + field.getColumnName());
 				}
 			});
 			classData.getProperties().stream().forEach(property -> {
 				if (property.getColumnName().equals(ck)) {
 					compositeKey.getProperties().add(property);
-					System.out.println("Property column that is pk: " + property.getColumnName());
 				}
 			});
 		});

@@ -41,7 +41,7 @@ public class ModelGeneratorService {
 
 	public void generate(List<ClassData> classes, String path, String packageName) {
 		List<ClassData> classesToGenerateModelFor = classes.stream()
-				.filter(classData -> !classData.getRelationship().getIsRelationshipClass())
+				.filter(classData -> (!classData.getRelationship().getIsRelationshipClass() && classData.getGenerateClass()))
 				.collect(Collectors.toList());
 		classes.forEach(classData -> {
 			// ako je u pitanju posebna klasa

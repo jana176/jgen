@@ -31,6 +31,9 @@ public class ClassData {
 	private Relationship relationship;
 	
 	@Builder.Default
+	private Boolean generateClass = true;
+	
+	@Builder.Default
 	private Boolean generateRepository = true;
 	
 	private Service service;

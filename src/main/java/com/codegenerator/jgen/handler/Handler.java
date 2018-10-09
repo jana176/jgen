@@ -12,14 +12,15 @@ import com.codegenerator.jgen.database.model.FMDatabaseMetadata;
 import com.codegenerator.jgen.database.model.FMForeignKey;
 import com.codegenerator.jgen.database.model.FMTable;
 import com.codegenerator.jgen.generator.ClassNamesUtil;
-import com.codegenerator.jgen.generator.model.GeneratorType;
+import com.codegenerator.jgen.generator.model.GenerateClassesRequest;
+import com.codegenerator.jgen.generator.model.GenerateProjectRequest;
+import com.codegenerator.jgen.generator.model.NewProjectInfo;
 import com.codegenerator.jgen.handler.model.ClassData;
 import com.codegenerator.jgen.handler.model.Controller;
 import com.codegenerator.jgen.handler.model.ControllerOperations;
 import com.codegenerator.jgen.handler.model.DatabaseConnection;
 import com.codegenerator.jgen.handler.model.Enumeration;
 import com.codegenerator.jgen.handler.model.Field;
-import com.codegenerator.jgen.handler.model.Project;
 import com.codegenerator.jgen.handler.model.Property;
 import com.codegenerator.jgen.handler.model.Relationship;
 import com.codegenerator.jgen.handler.model.ServiceOperations;
@@ -29,27 +30,38 @@ import com.codegenerator.jgen.handler.model.enumeration.Visibility;
 @Component
 public class Handler {
 
-	public Project metadataToObjects(FMDatabaseMetadata metadata, GeneratorType type) {
-		Project project = new Project();
+	public GenerateClassesRequest metadataToClassesObjects(FMDatabaseMetadata metadata) {
+		GenerateClassesRequest generateClassesRequest = new GenerateClassesRequest();
 
-		if (type == GeneratorType.NEW_PROJECT) {
-			//@formatter:off
+		List<ClassData> classes = new ArrayList<>();
+		metadata.getTables().forEach(table -> classes.add(createClassFromTable(table)));
+		generateClassesRequest.setClasses(classes);
+		generateClassesRequest.setPath(null);
+		determineRelationTables(classes);
+		return generateClassesRequest;
+	}
+
+	public GenerateProjectRequest metadataToProjectObjects(FMDatabaseMetadata metadata) {
+		GenerateProjectRequest generateProjectRequest = new GenerateProjectRequest();
+
+		//@formatter:off
 			DatabaseConnection dbc = DatabaseConnection.builder()
 					.driverName(metadata.getDriverName())
 					.url(metadata.getUrl())
 					.username(metadata.getUsername().split("@")[0])
-					.password("")
+					.password(null)
 					.build();
 			//@formatter:on
-			project.setDatabaseConnection(dbc);
-		}
+		generateProjectRequest.setDatabaseConnection(dbc);
 
 		List<ClassData> classes = new ArrayList<>();
 		metadata.getTables().forEach(table -> classes.add(createClassFromTable(table)));
-		project.setClasses(classes);
+		generateProjectRequest.setClasses(classes);
 		determineRelationTables(classes);
-
-		return project;
+		NewProjectInfo npi = new NewProjectInfo();
+		generateProjectRequest.setNewProjectInfo(npi);
+		
+		return generateProjectRequest;
 	}
 
 	public ClassData createClassFromTable(FMTable table) {

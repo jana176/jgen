@@ -15,13 +15,20 @@ public class ProjectRequestValidator {
 	public void validate(List<ClassData> classes) {
 		classes.forEach(classData -> {
 			validateServiceControllerRelation(classData, classData.getService(), classData.getController());
-
 		});
 
 	}
 
 	private void validateServiceControllerRelation(ClassData classData,
 			com.codegenerator.jgen.handler.model.Service service, Controller controller) {
+
+		if (!classData.getGenerateClass() && (classData.getGenerateRepository() || service.getGenerateService()
+				|| controller.getGenerateController())) {
+			throw new JGenGeneratorException(
+					"Cannot generate Repository, Service or Controller without the main Class!",
+					classData.getTableName());
+		}
+
 		if (!classData.getGenerateRepository() && service.getGenerateService()) {
 			throw new JGenGeneratorException("Cannot generate Service without Repository!", classData.getTableName());
 		} else if (!classData.getGenerateRepository() && controller.getGenerateController()) {

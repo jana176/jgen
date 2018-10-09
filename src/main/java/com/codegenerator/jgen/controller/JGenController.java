@@ -20,7 +20,6 @@ import com.codegenerator.jgen.generator.model.GeneratorType;
 import com.codegenerator.jgen.generator.service.GeneratorService;
 import com.codegenerator.jgen.generator.service.ProjectGeneratorService;
 import com.codegenerator.jgen.handler.Handler;
-import com.codegenerator.jgen.handler.model.Project;
 
 @RestController
 @RequestMapping("/jgen")
@@ -28,72 +27,64 @@ public class JGenController {
 
 	@Autowired
 	public ProjectGeneratorService projectGeneratorService;
-	
+
 	@Autowired
 	public GeneratorService generatorService;
-	
+
 	@Autowired
 	public DatabaseMetadataService databaseMetadataService;
-	
+
 	@Autowired
 	public Handler handler;
-	
+
 	@Autowired
 	public ProjectRequestValidator projectRequestValidator;
-	
+
 	@GetMapping("/metadata/raw")
 	public ResponseEntity<FMDatabaseMetadata> retrieveMetadata() {
 		FMDatabaseMetadata metadata = databaseMetadataService.retrieveDatabaseMetadata();
-		
+
 		return new ResponseEntity<FMDatabaseMetadata>(metadata, HttpStatus.OK);
 	}
-	
+
 	@PostMapping("/metadata/transform")
-	public ResponseEntity<Project> handleMetadata(@RequestHeader final GeneratorType type, @RequestBody final FMDatabaseMetadata metadata) {
-		Project projectInfo = handler.metadataToObjects(metadata, type);
-		return new ResponseEntity<Project>(projectInfo, HttpStatus.OK);
+	public ResponseEntity<?> handleMetadata(@RequestHeader final GeneratorType type,
+			@RequestBody final FMDatabaseMetadata metadata) {
+		if (type == GeneratorType.NEW_PROJECT) {
+			GenerateProjectRequest generateProjectRequest = handler.metadataToProjectObjects(metadata);
+			return new ResponseEntity<GenerateProjectRequest>(generateProjectRequest, HttpStatus.OK);
+		} else if (type == GeneratorType.EXISTING_PROJECT) {
+			GenerateClassesRequest generateClassesRequest = handler.metadataToClassesObjects(metadata);
+			return new ResponseEntity<GenerateClassesRequest>(generateClassesRequest, HttpStatus.OK);
+		}
+		else return ResponseEntity.notFound().build();
 	}
-	
+
 	@PostMapping("/generate/project")
-	public ResponseEntity<?> generateNewProject(@Validated @RequestBody final GenerateProjectRequest generateProjectRequest) {
+	public ResponseEntity<?> generateNewProject(
+			@Validated @RequestBody final GenerateProjectRequest generateProjectRequest) {
 		String path = generateProjectRequest.getNewProjectInfo().getBasePath().replace("\\\\", "\\");
 		generateProjectRequest.getNewProjectInfo().setBasePath(path);
-		
+
 		projectRequestValidator.validate(generateProjectRequest.getClasses());
-		
-		String basePackagePath = projectGeneratorService.setUpStructure(generateProjectRequest.getNewProjectInfo(), generateProjectRequest.getDatabaseConnection(), path);
-		System.out.println(basePackagePath);
+
+		String basePackagePath = projectGeneratorService.setUpStructure(generateProjectRequest.getNewProjectInfo(),
+				generateProjectRequest.getDatabaseConnection(), path);
+
 		generatorService.generate(generateProjectRequest, basePackagePath);
-		
+
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
-	
+
 	@PostMapping("/generate/classes")
 	public ResponseEntity<?> generateProjectClasses(@Validated @RequestBody final GenerateClassesRequest request) {
 		String path = request.getPath().replace("\\\\", "\\");
-		
+
 		projectRequestValidator.validate(request.getClasses());
-		
+
 		generatorService.generate(request, path);
-		
+
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
-	
-//	@PostMapping("/generate")
-//	public ResponseEntity<?> generateClasses(@RequestBody final PackagePath packagePath) throws SQLException {
-//		String path = packagePath.getPath().replace("\\\\", "\\");
-//		metadataGeneratorService.generate(path);
-//		return new ResponseEntity<>(HttpStatus.OK);
-//	}
-//	
-//	@PostMapping("/project")
-//	public ResponseEntity<?> generateNewProject(@Validated @RequestBody final NewProjectInfo newProjectInfo) throws SQLException {
-//		String path = newProjectInfo.getPath().replace("\\\\", "\\");
-//		newProjectInfo.setPath(path);
-//		String basePackagePath = projectGeneratorService.setUpStructure(newProjectInfo, path);
-//		metadataGeneratorService.generate(newProjectInfo, basePackagePath);
-//		
-//		return new ResponseEntity<>(HttpStatus.OK);
-//	}
 
 }

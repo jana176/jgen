@@ -6,11 +6,11 @@ import javax.validation.constraints.NotNull;
 
 import com.codegenerator.jgen.handler.model.ClassData;
 
-import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-@Builder
+@NoArgsConstructor
 public class GenerateClassesRequest {
 
 	@NotNull
