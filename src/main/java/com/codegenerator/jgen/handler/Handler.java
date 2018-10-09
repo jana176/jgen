@@ -12,7 +12,7 @@ import com.codegenerator.jgen.database.model.FMDatabaseMetadata;
 import com.codegenerator.jgen.database.model.FMForeignKey;
 import com.codegenerator.jgen.database.model.FMTable;
 import com.codegenerator.jgen.generator.ClassNamesUtil;
-import com.codegenerator.jgen.generator.model.NewProjectInfo;
+import com.codegenerator.jgen.generator.model.GeneratorType;
 import com.codegenerator.jgen.handler.model.ClassData;
 import com.codegenerator.jgen.handler.model.Controller;
 import com.codegenerator.jgen.handler.model.ControllerOperations;
@@ -29,30 +29,25 @@ import com.codegenerator.jgen.handler.model.enumeration.Visibility;
 @Component
 public class Handler {
 
-	public Project metadataToObjects(FMDatabaseMetadata metadata) {
+	public Project metadataToObjects(FMDatabaseMetadata metadata, GeneratorType type) {
 		Project project = new Project();
 
-		// start filling in the basic data
-		// Step one: basic info
+		if (type == GeneratorType.NEW_PROJECT) {
+			//@formatter:off
+			DatabaseConnection dbc = DatabaseConnection.builder()
+					.driverName(metadata.getDriverName())
+					.url(metadata.getUrl())
+					.username(metadata.getUsername().split("@")[0])
+					.password("")
+					.build();
+			//@formatter:on
+			project.setDatabaseConnection(dbc);
+		}
 
-		// Step two: database connection
-		//@formatter:off
-		DatabaseConnection dbc = DatabaseConnection.builder()
-				.driverName(metadata.getDriverName())
-				.url(metadata.getUrl())
-				.username(metadata.getUsername().split("@")[0])
-				.password("")
-				.build();
-		//@formatter:on
-		project.setDatabaseConnection(dbc);
-
-		// Step three: clazezz
 		List<ClassData> classes = new ArrayList<>();
 		metadata.getTables().forEach(table -> classes.add(createClassFromTable(table)));
 		project.setClasses(classes);
 		determineRelationTables(classes);
-		NewProjectInfo npi = new NewProjectInfo();
-		project.setNewProjectInfo(npi);
 
 		return project;
 	}
@@ -149,21 +144,23 @@ public class Handler {
 		com.codegenerator.jgen.handler.model.Service s = com.codegenerator.jgen.handler.model.Service.builder()
 				.serviceOperations(so).build();
 		classData.setService(s);
-		
+
 		// get all composite PK's
-		if(table.getCompositePrimaryKeyColumns() != null) {
+		if (table.getCompositePrimaryKeyColumns() != null) {
 			table.getCompositePrimaryKeyColumns().forEach(name -> {
-				Optional<Field> pkField = classData.getFields().stream().filter(f -> f.getColumnName().equals(name)).findFirst();
-				if(pkField.isPresent()) {
+				Optional<Field> pkField = classData.getFields().stream().filter(f -> f.getColumnName().equals(name))
+						.findFirst();
+				if (pkField.isPresent()) {
 					classData.getCompositePks().add(pkField.get().getColumnName());
 				}
-				Optional<Property> pkProperty = classData.getProperties().stream().filter(p -> p.getColumnName().equals(name)).findFirst();
-				if(pkProperty.isPresent()) {
+				Optional<Property> pkProperty = classData.getProperties().stream()
+						.filter(p -> p.getColumnName().equals(name)).findFirst();
+				if (pkProperty.isPresent()) {
 					classData.getCompositePks().add(pkProperty.get().getColumnName());
 				}
 			});
 		}
-		
+
 		return classData;
 	}
 

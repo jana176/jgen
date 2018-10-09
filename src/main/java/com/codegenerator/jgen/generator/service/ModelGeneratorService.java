@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -20,7 +19,6 @@ import com.codegenerator.jgen.generator.model.PackageType;
 import com.codegenerator.jgen.handler.model.ClassData;
 import com.codegenerator.jgen.handler.model.Enumeration;
 import com.codegenerator.jgen.handler.model.Field;
-import com.codegenerator.jgen.handler.model.Project;
 import com.codegenerator.jgen.handler.model.Property;
 import com.codegenerator.jgen.handler.model.enumeration.RelationshipType;
 
@@ -41,11 +39,11 @@ public class ModelGeneratorService {
 
 	private List<String> imports = new ArrayList<>();
 
-	public void generate(Project project, String path, String packageName) {
-		List<ClassData> classesToGenerateModelFor = project.getClasses().stream()
+	public void generate(List<ClassData> classes, String path, String packageName) {
+		List<ClassData> classesToGenerateModelFor = classes.stream()
 				.filter(classData -> !classData.getRelationship().getIsRelationshipClass())
 				.collect(Collectors.toList());
-		project.getClasses().forEach(classData -> {
+		classes.forEach(classData -> {
 			// ako je u pitanju posebna klasa
 			if (classData.getRelationship().getRelationshipType() != null && classData.getRelationship()
 					.getRelationshipType().equals(RelationshipType.MANY_TO_MANY_SEPARATE_CLASS)) {
@@ -54,14 +52,14 @@ public class ModelGeneratorService {
 		});
 
 		List<ClassData> m2mclasses = new ArrayList<>();
-		project.getClasses().forEach(classData -> {
+		classes.forEach(classData -> {
 			// ako je u pitanju posebna klasa
 			if (classData.getRelationship().getRelationshipType() != null
 					&& classData.getRelationship().getRelationshipType() == RelationshipType.MANY_TO_MANY) {
 				m2mclasses.add(classData);
 			}
 		});
-		m2mclasses.forEach(classData -> handleManyToManyInfo(project.getClasses(), classData));
+		m2mclasses.forEach(classData -> handleManyToManyInfo(classes, classData));
 
 		classesToGenerateModelFor.forEach(classData -> {
 			generateModelClass(classData, path, packageName);

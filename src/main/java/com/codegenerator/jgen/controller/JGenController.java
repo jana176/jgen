@@ -7,12 +7,16 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.codegenerator.jgen.controller.validator.ProjectRequestValidator;
 import com.codegenerator.jgen.database.model.FMDatabaseMetadata;
 import com.codegenerator.jgen.database.service.DatabaseMetadataService;
+import com.codegenerator.jgen.generator.model.GenerateClassesRequest;
+import com.codegenerator.jgen.generator.model.GenerateProjectRequest;
+import com.codegenerator.jgen.generator.model.GeneratorType;
 import com.codegenerator.jgen.generator.service.GeneratorService;
 import com.codegenerator.jgen.generator.service.ProjectGeneratorService;
 import com.codegenerator.jgen.handler.Handler;
@@ -44,22 +48,33 @@ public class JGenController {
 		return new ResponseEntity<FMDatabaseMetadata>(metadata, HttpStatus.OK);
 	}
 	
-	@PostMapping("/metadata/oop")
-	public ResponseEntity<Project> handleMetadata(@RequestBody final FMDatabaseMetadata metadata) {
-		Project projectInfo = handler.metadataToObjects(metadata);
+	@PostMapping("/metadata/transform")
+	public ResponseEntity<Project> handleMetadata(@RequestHeader final GeneratorType type, @RequestBody final FMDatabaseMetadata metadata) {
+		Project projectInfo = handler.metadataToObjects(metadata, type);
 		return new ResponseEntity<Project>(projectInfo, HttpStatus.OK);
 	}
 	
-	@PostMapping("/generate-from-project")
-	public ResponseEntity<?> handleMetadata(@Validated @RequestBody final Project project) {
-		String path = project.getNewProjectInfo().getBasePath().replace("\\\\", "\\");
-		project.getNewProjectInfo().setBasePath(path);
+	@PostMapping("/generate/project")
+	public ResponseEntity<?> generateNewProject(@Validated @RequestBody final GenerateProjectRequest generateProjectRequest) {
+		String path = generateProjectRequest.getNewProjectInfo().getBasePath().replace("\\\\", "\\");
+		generateProjectRequest.getNewProjectInfo().setBasePath(path);
 		
-		projectRequestValidator.validate(project);
+		projectRequestValidator.validate(generateProjectRequest.getClasses());
 		
-		String basePackagePath = projectGeneratorService.setUpStructure(project.getNewProjectInfo(), project.getDatabaseConnection(), path);
+		String basePackagePath = projectGeneratorService.setUpStructure(generateProjectRequest.getNewProjectInfo(), generateProjectRequest.getDatabaseConnection(), path);
 		System.out.println(basePackagePath);
-		generatorService.generate(project, basePackagePath);
+		generatorService.generate(generateProjectRequest, basePackagePath);
+		
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+	
+	@PostMapping("/generate/classes")
+	public ResponseEntity<?> generateProjectClasses(@Validated @RequestBody final GenerateClassesRequest request) {
+		String path = request.getPath().replace("\\\\", "\\");
+		
+		projectRequestValidator.validate(request.getClasses());
+		
+		generatorService.generate(request, path);
 		
 		return new ResponseEntity<>(HttpStatus.OK);
 	}

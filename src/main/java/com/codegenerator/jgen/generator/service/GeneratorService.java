@@ -1,9 +1,14 @@
 package com.codegenerator.jgen.generator.service;
 
+import java.io.File;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.codegenerator.jgen.handler.model.Project;
+import com.codegenerator.jgen.generator.model.GenerateClassesRequest;
+import com.codegenerator.jgen.generator.model.GenerateProjectRequest;
+import com.codegenerator.jgen.handler.model.ClassData;
 
 @Service
 public class GeneratorService {
@@ -23,26 +28,26 @@ public class GeneratorService {
 	@Autowired
 	public NamingConventionGeneratorService namingConventionGeneratorService;
 
-	public void generate(Project project, String path) {
-		String packageName = project.getNewProjectInfo().getBasePackageName();
+	public void generate(GenerateProjectRequest generateProjectRequest, String path) {
+		String packageName = generateProjectRequest.getNewProjectInfo().getBasePackageName();
 		
-		if(project.getDatabaseConnection().getOverrideNamingConvention()) {
+		if(generateProjectRequest.getDatabaseConnection().getOverrideNamingConvention()) {
 			namingConventionGeneratorService.generate(path, packageName);
 		}
-		
-		modelGeneratorService.generate(project, path, packageName);
-		repositoryGeneratorService.generate(project, path, packageName);
-		serviceGeneratorService.generate(project, path, packageName);
-		controllerGeneratorService.generate(project, path, packageName);
+		List<ClassData> classes = generateProjectRequest.getClasses();
+		modelGeneratorService.generate(classes, path, packageName);
+		repositoryGeneratorService.generate(classes, path, packageName);
+		serviceGeneratorService.generate(classes, path, packageName);
+		controllerGeneratorService.generate(classes, path, packageName);
 	}
 
-//	public void generate(String path) {
-//		String packageName = "generated";
-//		String basePath = path + File.separator + packageName;
-//		FMDatabaseMetadata metadata = databaseMetadataService.retrieveDatabaseMetadata();
-//		modelGeneratorService.generate(metadata, basePath, packageName);
-//		repositoryGeneratorService.generate(metadata, basePath, packageName);
-//		serviceGeneratorService.generate(metadata, basePath, packageName);
-//		controllerGeneratorService.generate(metadata, basePath, packageName);
-//	}
+	public void generate(GenerateClassesRequest request, String path) {
+		String packageName = "generated";
+		String basePath = path + File.separator + packageName;
+		List<ClassData> classes = request.getClasses();
+		modelGeneratorService.generate(classes, basePath, packageName);
+		repositoryGeneratorService.generate(classes, basePath, packageName);
+		serviceGeneratorService.generate(classes, basePath, packageName);
+		controllerGeneratorService.generate(classes, basePath, packageName);
+	}
 }

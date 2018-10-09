@@ -7,14 +7,12 @@ import org.springframework.stereotype.Service;
 import com.codegenerator.jgen.handler.model.ClassData;
 import com.codegenerator.jgen.handler.model.Controller;
 import com.codegenerator.jgen.handler.model.ControllerOperations;
-import com.codegenerator.jgen.handler.model.Project;
 import com.codegenerator.jgen.handler.model.ServiceOperations;
 
 @Service
 public class ProjectRequestValidator {
 
-	public void validate(Project project) {
-		List<ClassData> classes = project.getClasses();
+	public void validate(List<ClassData> classes) {
 		classes.forEach(classData -> {
 			validateServiceControllerRelation(classData, classData.getService(), classData.getController());
 

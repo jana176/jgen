@@ -8,6 +8,9 @@ import lombok.Data;
 public class ControllerOperations {
 
 	@Builder.Default
+	private String controllerPath = "generated";
+	
+	@Builder.Default
 	private Boolean get = true;
 	
 	@Builder.Default

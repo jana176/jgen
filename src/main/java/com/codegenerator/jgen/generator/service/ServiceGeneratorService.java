@@ -17,7 +17,6 @@ import com.codegenerator.jgen.generator.ClassNamesUtil;
 import com.codegenerator.jgen.generator.model.PackageType;
 import com.codegenerator.jgen.handler.model.ClassData;
 import com.codegenerator.jgen.handler.model.Field;
-import com.codegenerator.jgen.handler.model.Project;
 import com.codegenerator.jgen.handler.model.Relationship;
 import com.codegenerator.jgen.handler.model.enumeration.RelationshipType;
 
@@ -32,8 +31,8 @@ public class ServiceGeneratorService {
 
 	private List<String> imports = new ArrayList<>();
 
-	public void generate(Project project, String path, String packageName) {
-		List<ClassData> classesToGenerateServiceFor = project.getClasses().stream()
+	public void generate(List<ClassData> classes, String path, String packageName) {
+		List<ClassData> classesToGenerateServiceFor = classes.stream()
 				.filter(classData -> classData.getService().getGenerateService()
 						&& generateService(classData.getRelationship()))
 				.collect(Collectors.toList());

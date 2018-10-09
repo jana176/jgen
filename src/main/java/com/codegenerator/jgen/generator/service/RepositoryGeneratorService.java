@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import com.codegenerator.jgen.generator.model.PackageType;
 import com.codegenerator.jgen.handler.model.ClassData;
 import com.codegenerator.jgen.handler.model.Field;
-import com.codegenerator.jgen.handler.model.Project;
 import com.codegenerator.jgen.handler.model.Relationship;
 import com.codegenerator.jgen.handler.model.enumeration.RelationshipType;
 
@@ -31,8 +30,8 @@ public class RepositoryGeneratorService {
 
 	private List<String> imports = new ArrayList<>();
 
-	public void generate(Project project, String path, String packageName) {
-		List<ClassData> classesToGenerateRepositoryFor = project.getClasses().stream().filter(
+	public void generate(List<ClassData> classes, String path, String packageName) {
+		List<ClassData> classesToGenerateRepositoryFor = classes.stream().filter(
 				classData -> classData.getGenerateRepository() && generateRepository(classData.getRelationship()))
 				.collect(Collectors.toList());
 

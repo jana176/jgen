@@ -17,7 +17,6 @@ import com.codegenerator.jgen.generator.ClassNamesUtil;
 import com.codegenerator.jgen.generator.model.PackageType;
 import com.codegenerator.jgen.handler.model.ClassData;
 import com.codegenerator.jgen.handler.model.Field;
-import com.codegenerator.jgen.handler.model.Project;
 import com.codegenerator.jgen.handler.model.Relationship;
 import com.codegenerator.jgen.handler.model.enumeration.RelationshipType;
 
@@ -32,19 +31,18 @@ public class ControllerGeneratorService {
 
 	private List<String> imports = new ArrayList<>();
 
-	public void generate(Project project, String path, String packageName) {
-		List<ClassData> classesToGenerateControllerFor = project.getClasses().stream()
+	public void generate(List<ClassData> classes, String path, String packageName) {
+		List<ClassData> classesToGenerateControllerFor = classes.stream()
 				.filter(classData -> classData.getController().getGenerateController()
 						&& generateController(classData.getRelationship()))
 				.collect(Collectors.toList());
-		String controllerPath = project.getNewProjectInfo().getProjectName();
 		classesToGenerateControllerFor.forEach(classData -> {
-			generateControllerForModelClass(classData, path, packageName, controllerPath);
+			generateControllerForModelClass(classData, path, packageName);
 		});
 	}
+	
 
-	private void generateControllerForModelClass(ClassData classData, String path, String packageName,
-			String controllerPath) {
+	private void generateControllerForModelClass(ClassData classData, String path, String packageName) {
 		prepareImports(classData);
 		final Field idField = retrieveIdColumn(classData, packageName);
 		imports.add(packageName + ".model." + classData.getClassName());
@@ -62,7 +60,7 @@ public class ControllerGeneratorService {
 			context.put("fieldName", ClassNamesUtil.toFieldName(classData.getClassName()));
 			context.put("idField", idField);
 			context.put("packageName", packageName.concat(".controller"));
-			context.put("controllerPath", controllerPath);
+			context.put("controllerPath", classData.getController().getControllerOperations().getControllerPath());
 			context.put("imports", imports);
 			template.process(context, out);
 			out.flush();
