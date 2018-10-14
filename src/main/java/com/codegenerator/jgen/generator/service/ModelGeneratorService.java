@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import com.codegenerator.jgen.database.model.FMForeignKey;
 import com.codegenerator.jgen.generator.model.PackageType;
 import com.codegenerator.jgen.handler.model.ClassData;
 import com.codegenerator.jgen.handler.model.Enumeration;
@@ -195,20 +194,5 @@ public class ModelGeneratorService {
 		}
 	}
 
-	private FMForeignKey determineCascadeOperation(FMForeignKey foreignKey) {
-		final String update = foreignKey.getUpdateRule();
-		final String delete = foreignKey.getDeleteRule();
-		if (update.equals("importedKeyCascade") && delete.equals("importedKeyCascade")) {
-			foreignKey.setCascadeType("ALL");
-			imports.add("javax.persistence.CascadeType");
-		}
-		if (!update.equals("importedKeyCascade") && delete.equals("importedKeyCascade")) {
-			foreignKey.setOrphanRemoval(true);
-			foreignKey.setCascadeType("REMOVE");
-			imports.add("javax.persistence.CascadeType");
-		}
-
-		return foreignKey;
-	}
 
 }
