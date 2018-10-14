@@ -8,14 +8,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.codegenerator.jgen.database.model.FMColumn;
-import com.codegenerator.jgen.database.model.FMDatabaseMetadata;
-import com.codegenerator.jgen.database.model.FMTable;
-import com.codegenerator.jgen.model.PackageType;
+import com.codegenerator.jgen.generator.model.PackageType;
+import com.codegenerator.jgen.handler.model.ClassData;
+import com.codegenerator.jgen.handler.model.Field;
+import com.codegenerator.jgen.handler.model.Relationship;
+import com.codegenerator.jgen.handler.model.enumeration.RelationshipType;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -24,25 +26,33 @@ import freemarker.template.TemplateException;
 public class RepositoryGeneratorService {
 
 	@Autowired
-	public GeneratorService generatorService;
-	
+	public BasicGenerator basicGenerator;
+
 	private List<String> imports = new ArrayList<>();
 
-	public void generate(FMDatabaseMetadata databaseMetadata, String path, String packageName) {
-		databaseMetadata.getTables().forEach(table -> generateRepositoryForModelClass(table, path, packageName));
+	public void generate(List<ClassData> classes, String path, String packageName) {
+		List<ClassData> classesToGenerateRepositoryFor = classes.stream().filter(
+				classData -> classData.getGenerateRepository() && generateRepository(classData.getRelationship()))
+				.collect(Collectors.toList());
+
+		classesToGenerateRepositoryFor.forEach(classData -> {
+			generateRepositoryForModelClass(classData, path, packageName);
+		});
 	}
-	
-	private void generateRepositoryForModelClass(FMTable table, String path, String packageName) {
-		final String idType = retrieveIdColumnType(table);
-		imports.add(packageName + ".model." + table.getClassName());
-		
-		Template template = generatorService.retrieveTemplate(PackageType.REPOSITORY);
+
+	private void generateRepositoryForModelClass(ClassData classData, String path, String packageName) {
+		final String idType = retrieveIdColumnType(classData, packageName);
+		imports.add(packageName + ".model." + classData.getClassName());
+
+		Template template = basicGenerator.retrieveTemplate(PackageType.REPOSITORY);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		try {
-			out = generatorService.getAndPrepareWriter(path + File.separator + PackageType.REPOSITORY.toString().toLowerCase() + File.separator + table.getClassName().concat("Repository") + ".java");
+			out = basicGenerator
+					.getAndPrepareWriter(path + File.separator + PackageType.REPOSITORY.toString().toLowerCase()
+							+ File.separator + classData.getClassName().concat("Repository") + ".java");
 			context.clear();
-			context.put("repoClassName", table.getClassName());
+			context.put("repoClassName", classData.getClassName());
 			context.put("idType", idType);
 			context.put("packageName", packageName.concat(".repository"));
 			context.put("imports", imports);
@@ -60,13 +70,26 @@ public class RepositoryGeneratorService {
 			}
 		}
 		imports.clear();
-		
+
+	}
+
+	private String retrieveIdColumnType(ClassData classData, String packageName) {
+		if (classData.getCompositeKey() == null) {
+			final Optional<Field> idColumn = classData.getFields().stream().filter(field -> field.getIsPrimaryKey())
+					.findAny();
+			return idColumn.get().getType();
+		} else {
+			imports.add(packageName + ".model." + classData.getClassName() + "Id");
+			return classData.getClassName() + "Id";
+		}
 	}
 	
-	
-	private String retrieveIdColumnType(FMTable table) {
-		final Optional<FMColumn> idColumn = table.getTableColumns().stream().filter(column -> column.getIsPrimaryKey()).findAny();
-		return idColumn.get().getColumnTypeName();
+	private Boolean generateRepository(Relationship relationship) {
+		if((relationship.getRelationshipType() != null && relationship.getRelationshipType().equals(RelationshipType.MANY_TO_MANY_SEPARATE_CLASS)) || relationship.getRelationshipType() == null) {
+			return true;
+		} else {
+			return false;
+		}
 	}
-	
+
 }

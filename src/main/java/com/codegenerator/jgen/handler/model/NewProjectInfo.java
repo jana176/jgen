@@ -1,8 +1,6 @@
-package com.codegenerator.jgen.model;
+package com.codegenerator.jgen.handler.model;
 
 import javax.validation.constraints.NotEmpty;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
 
@@ -10,8 +8,7 @@ import lombok.Data;
 public class NewProjectInfo {
 
 	@NotEmpty
-	@JsonProperty("basePath")
-	private String path;
+	private String basePath;
 	
 	@NotEmpty
 	private String groupId;
@@ -30,11 +27,4 @@ public class NewProjectInfo {
 	@NotEmpty
 	private String basePackageName;
 	
-	private String driverName;
-	
-	private String url;
-	
-	private String username;
-	
-	private String password;
 }

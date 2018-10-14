@@ -1,13 +1,16 @@
-package com.codegenerator.jgen.model;
+package com.codegenerator.jgen.generator.model;
+
 
 public enum PackageType {
 	
 	ENUMERATION,
 	MODEL,
+	EMBEDDED_KEY,
 	REPOSITORY,
 	SERVICE,
 	CONTROLLER,
 	POM,
 	APPLICATION,
-	YAML
+	YAML,
+	NAMING_STRATEGY
 }

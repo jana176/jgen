@@ -1,70 +1,53 @@
 package com.codegenerator.jgen.generator.service;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
+import org.springframework.stereotype.Service;
 
-import com.codegenerator.jgen.model.PackageType;
+import com.codegenerator.jgen.generator.model.GenerateClassesRequest;
+import com.codegenerator.jgen.generator.model.GenerateProjectRequest;
+import com.codegenerator.jgen.handler.model.ClassData;
 
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import lombok.Setter;
-
-@Component
+@Service
 public class GeneratorService {
 
 	@Autowired
-	public FreeMarkerConfigurer freeMarkerConfigurer;
+	public ModelGeneratorService modelGeneratorService;
 
-	@Setter
-	public String packagePath;
+	@Autowired
+	public RepositoryGeneratorService repositoryGeneratorService;
 
-	public Template retrieveTemplate(PackageType packageType) {
-		Configuration config = freeMarkerConfigurer.getConfiguration();
-		Template template = null;
-		String templateName = determineTemplateName(packageType);
-		try {
-			template = config.getTemplate(templateName);
-		} catch (IOException e) {
-			System.out.println("Can't find template " + e);
+	@Autowired
+	public ServiceGeneratorService serviceGeneratorService;
+
+	@Autowired
+	public ControllerGeneratorService controllerGeneratorService;
+	
+	@Autowired
+	public NamingConventionGeneratorService namingConventionGeneratorService;
+
+	public void generate(GenerateProjectRequest generateProjectRequest, String path) {
+		String packageName = generateProjectRequest.getNewProjectInfo().getBasePackageName();
+		
+		if(generateProjectRequest.getDatabaseConnection().getOverrideNamingConvention()) {
+			namingConventionGeneratorService.generate(path, packageName);
 		}
-		return template;
+		List<ClassData> classes = generateProjectRequest.getClasses();
+		modelGeneratorService.generate(classes, path, packageName);
+		repositoryGeneratorService.generate(classes, path, packageName);
+		serviceGeneratorService.generate(classes, path, packageName);
+		controllerGeneratorService.generate(classes, path, packageName);
 	}
 
-	public Writer getAndPrepareWriter(final String packagePath) throws IOException {
-		File outputFile = new File(packagePath);
-		outputFile.getParentFile().mkdirs();
-
-		return new OutputStreamWriter(new FileOutputStream(outputFile));
+	public void generate(GenerateClassesRequest request, String path) {
+		String packageName = "generated";
+		String basePath = path + File.separator + packageName;
+		List<ClassData> classes = request.getClasses();
+		modelGeneratorService.generate(classes, basePath, packageName);
+		repositoryGeneratorService.generate(classes, basePath, packageName);
+		serviceGeneratorService.generate(classes, basePath, packageName);
+		controllerGeneratorService.generate(classes, basePath, packageName);
 	}
-
-	private String determineTemplateName(PackageType type) {
-		switch (type) {
-		case ENUMERATION:
-			return "enum.ftl";
-		case MODEL:
-			return "class.ftl";
-		case REPOSITORY:
-			return "repository.ftl";
-		case SERVICE:
-			return "service.ftl";
-		case CONTROLLER:
-			return "controller.ftl";
-		case POM:
-			return "pom.ftl";
-		case APPLICATION:
-			return "application.ftl";
-		case YAML:
-			return "yaml.ftl";
-		default:
-			return "";
-		}
-	}
-
 }

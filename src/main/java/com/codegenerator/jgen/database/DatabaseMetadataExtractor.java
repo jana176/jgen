@@ -33,12 +33,12 @@ public class DatabaseMetadataExtractor {
 			List<FMTable> tables = processTables(tableMetaData);
 			processColumnsForTable(tables, metadata);
 			processForeignKeysForTable(tables, metadata);
-			processUniqueColumnsForTable(tables, metadata);
+			processIndexedColumnsForTable(tables, metadata);
 			processPrimaryKeysForTable(tables, metadata);
 
-			databaseMetadata.setDriverName(metadata.getDriverName());
+			databaseMetadata.setDriverName("com.mysql.jdbc.Driver");
 			databaseMetadata.setUrl(metadata.getURL());
-			databaseMetadata.setUsername(metadata.getUserName());
+			databaseMetadata.setUsername(metadata.getUserName().split("@")[0]);
 			databaseMetadata.setTables(tables);
 
 		} catch (Exception e) {
@@ -53,8 +53,7 @@ public class DatabaseMetadataExtractor {
 		while (resultSet.next()) {
 			FMTable table = new FMTable();
 			table.setTableSchema(resultSet.getString("TABLE_CAT"));
-			table.setTableName(resultSet.getString("TABLE_NAME").toUpperCase());
-			table.setClassName(ClassNamesUtil.toClassName(table.getTableName()));
+			table.setTableName(resultSet.getString("TABLE_NAME"));
 			table.setTableType(resultSet.getString("TABLE_TYPE"));
 			tables.add(table);
 		}
@@ -152,17 +151,17 @@ public class DatabaseMetadataExtractor {
 				while (resultSet.next()) {
 					FMForeignKey foreignKey = new FMForeignKey();
 					foreignKey.setPkTableSchema(resultSet.getString("PKTABLE_CAT"));
-					foreignKey.setPkTableName(resultSet.getString("PKTABLE_NAME").toUpperCase());
-					foreignKey.setPkColumnName(resultSet.getString("PKCOLUMN_NAME").toUpperCase());
+					foreignKey.setPkTableName(resultSet.getString("PKTABLE_NAME"));
+					foreignKey.setPkColumnName(resultSet.getString("PKCOLUMN_NAME"));
 
 					foreignKey.setFkTableSchema(resultSet.getString("FKTABLE_CAT"));
-					foreignKey.setFkTableName(resultSet.getString("FKTABLE_NAME").toUpperCase());
-					foreignKey.setFkColumnName(resultSet.getString("FKCOLUMN_NAME").toUpperCase());
+					foreignKey.setFkTableName(resultSet.getString("FKTABLE_NAME"));
+					foreignKey.setFkColumnName(resultSet.getString("FKCOLUMN_NAME"));
 					foreignKey.setUpdateRule(determineUpdateRule(resultSet.getString("UPDATE_RULE")));
 					foreignKey.setDeleteRule(determineDeleteRule(resultSet.getString("DELETE_RULE")));
 
 					table.getTableColumns().stream().forEach(column -> {
-						if (column.getColumnName().equals(foreignKey.getFkColumnName())) {
+						if (column.getColumnName().toUpperCase().equals(foreignKey.getFkColumnName().toUpperCase())) {
 							column.setForeignKeyInfo(foreignKey);
 						}
 					});
@@ -177,8 +176,10 @@ public class DatabaseMetadataExtractor {
 
 	}
 
-	private void processUniqueColumnsForTable(List<FMTable> tables, DatabaseMetaData metadata) {
+	private void processIndexedColumnsForTable(List<FMTable> tables, DatabaseMetaData metadata) {
 		tables.stream().forEach(table -> {
+			table.setCompositePrimaryKeyColumns(new ArrayList<>());
+			List<String> primaryKeysPerTable = new ArrayList<>();
 			try {
 				ResultSet resultSet = metadata.getIndexInfo(null, null, table.getTableName(), true, false);
 				List<String> uniqueColumns = new ArrayList<>();
@@ -190,11 +191,20 @@ public class DatabaseMetadataExtractor {
 							column.setIsUnique(true);
 						}
 					});
+					if (resultSet.getString("INDEX_NAME").equals("PRIMARY")) {
+						primaryKeysPerTable.add(resultSet.getString("COLUMN_NAME"));
+					}
 				}
 				table.setUniqueColumns(uniqueColumns);
 			} catch (SQLException e) {
-				System.out.println("Error while trying to fetch unique columns for tables: " + e);
+				System.out.println("Error while trying to fetch indexes for tables: " + e);
 			}
+			if (primaryKeysPerTable.size() >= 2) {
+				 System.out.println("Primarni kljuc je kompozitni! - " +
+				 table.getTableName());
+				table.getCompositePrimaryKeyColumns().addAll(primaryKeysPerTable);
+			}
+			primaryKeysPerTable.clear();
 		});
 
 	}
@@ -232,6 +242,5 @@ public class DatabaseMetadataExtractor {
 			return "";
 		}
 	}
-
 
 }

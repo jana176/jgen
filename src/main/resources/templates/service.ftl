@@ -9,27 +9,33 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ${className}Service {
+public class ${class.className}Service {
 
 	@Autowired
-	private ${className}Repository ${fieldName}Repository;
+	private ${class.className}Repository ${fieldName}Repository;
+	<#if class.service.serviceOperations.findById>
 	
-	public  Optional<${className}> findById(${idType} id) {
+	public  Optional<${class.className}> findById(${idType} id) {
 		return ${fieldName}Repository.findById(id);
 	}
+	</#if>
+	<#if class.service.serviceOperations.findById>
 	
-	public Iterable<${className}> findAll(){
+	public Iterable<${class.className}> findAll(){
 		return ${fieldName}Repository.findAll();
 	}
-
-	public ${className} save(${className} ${fieldName}) {
+	</#if>
+	<#if class.service.serviceOperations.findById>
+	
+	public ${class.className} save(${class.className} ${fieldName}) {
 		return ${fieldName}Repository.save(${fieldName});
 	}
-
-	public void delete${className}(${idType} id) {
-		Optional<${className}> ${fieldName} = findById(id);
-		if (${fieldName} != null) {
-			${fieldName}Repository.deleteById(id);
-		}
+	</#if>
+	<#if class.service.serviceOperations.findById>
+	
+	public void delete${class.className}(${idType} id) {
+		${fieldName}Repository.deleteById(id);
 	}
+	</#if>
+	
 }
