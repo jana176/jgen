@@ -6,6 +6,7 @@ import javax.validation.Valid;
 
 import com.codegenerator.jgen.handler.model.ClassData;
 import com.codegenerator.jgen.handler.model.DatabaseConnection;
+import com.codegenerator.jgen.handler.model.NewProjectInfo;
 
 import lombok.Data;
 

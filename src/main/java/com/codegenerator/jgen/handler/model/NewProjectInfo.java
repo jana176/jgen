@@ -1,4 +1,4 @@
-package com.codegenerator.jgen.generator.model;
+package com.codegenerator.jgen.handler.model;
 
 import javax.validation.constraints.NotEmpty;
 
