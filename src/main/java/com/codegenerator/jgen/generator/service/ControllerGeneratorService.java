@@ -13,12 +13,13 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.codegenerator.jgen.generator.BasicGenerator;
 import com.codegenerator.jgen.generator.model.PackageType;
-import com.codegenerator.jgen.handler.ClassNamesUtil;
 import com.codegenerator.jgen.handler.model.ClassData;
 import com.codegenerator.jgen.handler.model.Field;
 import com.codegenerator.jgen.handler.model.Relationship;
 import com.codegenerator.jgen.handler.model.enumeration.RelationshipType;
+import com.codegenerator.jgen.handler.util.ClassNamesUtil;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;

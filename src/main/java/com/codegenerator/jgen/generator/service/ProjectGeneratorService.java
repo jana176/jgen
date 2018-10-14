@@ -13,6 +13,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.codegenerator.jgen.generator.BasicGenerator;
 import com.codegenerator.jgen.generator.model.PackageType;
 import com.codegenerator.jgen.handler.model.DatabaseConnection;
 import com.codegenerator.jgen.handler.model.NewProjectInfo;

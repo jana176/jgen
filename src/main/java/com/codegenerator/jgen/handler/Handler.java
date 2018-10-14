@@ -25,6 +25,7 @@ import com.codegenerator.jgen.handler.model.Relationship;
 import com.codegenerator.jgen.handler.model.ServiceOperations;
 import com.codegenerator.jgen.handler.model.enumeration.RelationshipType;
 import com.codegenerator.jgen.handler.model.enumeration.Visibility;
+import com.codegenerator.jgen.handler.util.ClassNamesUtil;
 
 @Component
 public class Handler {

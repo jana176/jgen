@@ -1,4 +1,4 @@
-package com.codegenerator.jgen.handler;
+package com.codegenerator.jgen.handler.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;

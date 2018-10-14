@@ -1,4 +1,4 @@
-package com.codegenerator.jgen.generator.service;
+package com.codegenerator.jgen.generator;
 
 import java.io.File;
 import java.io.FileOutputStream;
