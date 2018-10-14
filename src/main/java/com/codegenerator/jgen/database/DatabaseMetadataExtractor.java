@@ -15,7 +15,7 @@ import com.codegenerator.jgen.database.model.FMColumn;
 import com.codegenerator.jgen.database.model.FMDatabaseMetadata;
 import com.codegenerator.jgen.database.model.FMForeignKey;
 import com.codegenerator.jgen.database.model.FMTable;
-import com.codegenerator.jgen.generator.ClassNamesUtil;
+import com.codegenerator.jgen.handler.ClassNamesUtil;
 
 @Repository
 public class DatabaseMetadataExtractor {

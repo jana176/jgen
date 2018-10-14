@@ -1,10 +1,8 @@
-package com.codegenerator.jgen.generator.model;
+package com.codegenerator.jgen.handler.model;
 
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
-
-import com.codegenerator.jgen.handler.model.ClassData;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
