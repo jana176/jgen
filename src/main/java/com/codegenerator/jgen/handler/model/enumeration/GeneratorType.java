@@ -1,4 +1,4 @@
-package com.codegenerator.jgen.generator.model.enumeration;
+package com.codegenerator.jgen.handler.model.enumeration;
 
 public enum GeneratorType {
 	
