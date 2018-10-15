@@ -1,4 +1,4 @@
-package com.codegenerator.jgen.generator.model;
+package com.codegenerator.jgen.generator.model.enumeration;
 
 
 public enum PackageType {
