@@ -57,7 +57,6 @@ public class DatabaseMetadataExtractor {
 			table.setTableType(resultSet.getString("TABLE_TYPE"));
 			tables.add(table);
 		}
-
 		return tables;
 	}
 
@@ -90,9 +89,7 @@ public class DatabaseMetadataExtractor {
 			} catch (SQLException e) {
 				System.out.println("Error while trying to fetch columns for tables: " + e);
 			}
-
 		});
-
 	}
 
 	private void retrieveEnumValues(FMColumn column, Connection connection) {
@@ -105,44 +102,19 @@ public class DatabaseMetadataExtractor {
 				column.setEnumValues(ClassNamesUtil.separateEnumValues(rs.getString("Type")));
 			}
 		} catch (SQLException e) {
-			System.out.println(e);
+			System.out.println("Error while trying to fetch enumerated values for columns: " + e);
 		} finally {
 			if (stmt != null) {
 				try {
 					stmt.close();
 				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					System.out.println("Error while trying to close executed statement: " + e);
 				}
 			}
 		}
-
-	}
-
-	private void processPrimaryKeysForTable(List<FMTable> tables, DatabaseMetaData metadata) {
-
-		tables.stream().forEach(table -> {
-			ResultSet resultSet;
-			try {
-				resultSet = metadata.getPrimaryKeys(null, null, table.getTableName());
-				while (resultSet.next()) {
-					String primaryKeyColumn = resultSet.getString("COLUMN_NAME");
-					table.getTableColumns().stream().forEach(column -> {
-						if (column.getColumnName().equals(primaryKeyColumn)) {
-							column.setIsPrimaryKey(true);
-						}
-					});
-				}
-
-			} catch (SQLException e) {
-				System.out.println("Error while trying to fetch primary keys for tables: " + e);
-			}
-		});
-		;
 	}
 
 	private void processForeignKeysForTable(List<FMTable> tables, DatabaseMetaData metadata) {
-
 		tables.stream().forEach(table -> {
 			ResultSet resultSet;
 			try {
@@ -153,7 +125,6 @@ public class DatabaseMetadataExtractor {
 					foreignKey.setPkTableSchema(resultSet.getString("PKTABLE_CAT"));
 					foreignKey.setPkTableName(resultSet.getString("PKTABLE_NAME"));
 					foreignKey.setPkColumnName(resultSet.getString("PKCOLUMN_NAME"));
-
 					foreignKey.setFkTableSchema(resultSet.getString("FKTABLE_CAT"));
 					foreignKey.setFkTableName(resultSet.getString("FKTABLE_NAME"));
 					foreignKey.setFkColumnName(resultSet.getString("FKCOLUMN_NAME"));
@@ -165,21 +136,42 @@ public class DatabaseMetadataExtractor {
 							column.setForeignKeyInfo(foreignKey);
 						}
 					});
-
 					foreignKeys.add(foreignKey);
 				}
-				table.setForeignKeys(foreignKeys);
 			} catch (SQLException e) {
 				System.out.println("Error while trying to fetch foreign keys for tables: " + e);
 			}
 		});
-
+	}
+	
+	private void processPrimaryKeysForTable(List<FMTable> tables, DatabaseMetaData metadata) {
+		tables.stream().forEach(table -> {
+			table.setCompositePrimaryKeyColumns(new ArrayList<>());
+			List<String> primaryKeysPerTable = new ArrayList<>();
+			ResultSet resultSet;
+			try {
+				resultSet = metadata.getPrimaryKeys(null, null, table.getTableName());
+				while (resultSet.next()) {
+					String primaryKeyColumn = resultSet.getString("COLUMN_NAME");
+					table.getTableColumns().stream().forEach(column -> {
+						if (column.getColumnName().equals(primaryKeyColumn)) {
+							column.setIsPrimaryKey(true);
+							column.setIsUnique(true);
+							primaryKeysPerTable.add(primaryKeyColumn);
+						}
+					});
+				}
+			} catch (SQLException e) {
+				System.out.println("Error while trying to fetch primary key for table: " + e);
+			}
+			if (primaryKeysPerTable.size() >= 2)
+				table.getCompositePrimaryKeyColumns().addAll(primaryKeysPerTable);
+			primaryKeysPerTable.clear();
+		});		
 	}
 
 	private void processIndexedColumnsForTable(List<FMTable> tables, DatabaseMetaData metadata) {
 		tables.stream().forEach(table -> {
-			table.setCompositePrimaryKeyColumns(new ArrayList<>());
-			List<String> primaryKeysPerTable = new ArrayList<>();
 			try {
 				ResultSet resultSet = metadata.getIndexInfo(null, null, table.getTableName(), true, false);
 				List<String> uniqueColumns = new ArrayList<>();
@@ -191,22 +183,12 @@ public class DatabaseMetadataExtractor {
 							column.setIsUnique(true);
 						}
 					});
-					if (resultSet.getString("INDEX_NAME").equals("PRIMARY")) {
-						primaryKeysPerTable.add(resultSet.getString("COLUMN_NAME"));
-					}
 				}
 				table.setUniqueColumns(uniqueColumns);
 			} catch (SQLException e) {
 				System.out.println("Error while trying to fetch indexes for tables: " + e);
 			}
-			if (primaryKeysPerTable.size() >= 2) {
-				 System.out.println("Primarni kljuc je kompozitni! - " +
-				 table.getTableName());
-				table.getCompositePrimaryKeyColumns().addAll(primaryKeysPerTable);
-			}
-			primaryKeysPerTable.clear();
 		});
-
 	}
 
 	private String determineUpdateRule(String index) {
