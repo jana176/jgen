@@ -40,8 +40,8 @@ public class ModelGeneratorService {
 	private List<String> imports = new ArrayList<>();
 
 	public void generate(List<ClassData> classes, String path, String packageName) {
-		List<ClassData> classesToGenerateModelFor = classes.stream()
-				.filter(classData -> (!classData.getRelationship().getIsRelationshipClass() && classData.getGenerateClass()))
+		List<ClassData> classesToGenerateModelFor = classes.stream().filter(
+				classData -> (!classData.getRelationship().getIsRelationshipClass() && classData.getGenerateClass()))
 				.collect(Collectors.toList());
 		classes.forEach(classData -> {
 			// ako je u pitanju posebna klasa
@@ -66,9 +66,9 @@ public class ModelGeneratorService {
 		});
 	}
 
-	private void generateModelClass(ClassData classData, String path, String packageName) {	
+	private void generateModelClass(ClassData classData, String path, String packageName) {
 		determineEnums(classData, path, packageName);
-		determineCompositeKeys(classData,  path, packageName);
+		determineCompositeKeys(classData, path, packageName);
 		prepareImports(classData);
 		imports.add("javax.persistence.Column");
 		imports.add("javax.persistence.Entity");
@@ -110,7 +110,6 @@ public class ModelGeneratorService {
 				imports.add("javax.persistence.Enumerated");
 				imports.add("javax.persistence.EnumType");
 			});
-
 		}
 	}
 
@@ -152,13 +151,12 @@ public class ModelGeneratorService {
 			imports.add("javax.persistence.JoinColumn");
 			imports.add("javax.persistence.CascadeType");
 		}
-		if(classData.getCompositeKey() != null) {
+		if (classData.getCompositeKey() != null) {
 			imports.add("javax.persistence.EmbeddedId");
 		}
 	}
 
 	private void handleManyToManyInfo(List<ClassData> allClasses, ClassData m2mClass) {
-		System.out.println("Class that has m2m: " + m2mClass.getClassName());
 		Property propertyOne = m2mClass.getProperties().get(0);
 		Property propertyTwo = m2mClass.getProperties().get(1);
 		allClasses.forEach(classData -> {
@@ -177,23 +175,19 @@ public class ModelGeneratorService {
 					classData.getManyToManyProperty().setColumnName(pkField.get().getColumnName());
 			}
 		});
-
 	}
 
 	private ClassData determineCompositeKeys(ClassData classData, String path, String packageName) {
 		if (CollectionUtils.isEmpty(classData.getCompositePks()) || classData.getCompositePks() == null) {
 			return classData;
 		} else {
-			System.out.println("Class that has composite key: " + classData.getClassName());
-			compositeKeyModelGeneratorService.generate(classData, classData.getCompositePks(), path, packageName);
+			compositeKeyModelGeneratorService.generate(classData, path, packageName);
 			classData.getCompositePks().forEach(pk -> {
 				classData.getFields().removeIf(f -> f.getColumnName().equals(pk));
 				classData.getProperties().removeIf(p -> p.getColumnName().equals(pk));
-
 			});
 			return classData;
 		}
 	}
-
 
 }

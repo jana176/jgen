@@ -26,10 +26,9 @@ public class CompositeKeyModelGeneratorService {
 
 	private List<String> imports = new ArrayList<>();
 
-	public void generate(ClassData classData, List<String> compositePks, String path, String packageName) {
+	public void generate(ClassData classData, String path, String packageName) {
 
 		generateCompositeKeyModelClass(classData, path, packageName);
-
 	}
 
 	private void generateCompositeKeyModelClass(ClassData classData, String path, String packageName) {

@@ -204,7 +204,6 @@ public class Handler {
 	private void determineRelationTables(List<ClassData> classes) {
 		List<Property> pkProperties = new ArrayList<>();
 		List<Property> fkProperties = new ArrayList<>();
-
 		classes.forEach(classData -> {
 			classData.getProperties().forEach(property -> {
 				if (!property.getIsSelfReferenced()) {
@@ -213,12 +212,8 @@ public class Handler {
 					} else
 						fkProperties.add(property);
 				}
-
 			});
 			if (pkProperties.size() >= 2) {
-//				System.out
-//						.println("Ima bar dva strana kljuca kao primarna, poveznicka tabela sa kompozitnim kljucem! - "
-//								+ classData.getTableName());
 				classData.getRelationship().setIsRelationshipClass(true);
 				if (classData.getFields().size() > 0 || classData.getEnums().size() > 0)
 					classData.getRelationship().setRelationshipType(RelationshipType.MANY_TO_MANY_SEPARATE_CLASS);
@@ -226,8 +221,6 @@ public class Handler {
 					classData.getRelationship().setRelationshipType(RelationshipType.MANY_TO_MANY);
 			}
 			if (fkProperties.size() >= 2) {
-//				System.out.println("Ima bar dva strana kljuca ali nisu primarni, MOZDA je poveznicka tablela! - "
-//						+ classData.getTableName());
 			}
 			pkProperties.clear();
 			fkProperties.clear();

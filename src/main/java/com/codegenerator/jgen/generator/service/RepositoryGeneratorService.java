@@ -71,7 +71,6 @@ public class RepositoryGeneratorService {
 			}
 		}
 		imports.clear();
-
 	}
 
 	private String retrieveIdColumnType(ClassData classData, String packageName) {
@@ -84,9 +83,11 @@ public class RepositoryGeneratorService {
 			return classData.getClassName() + "Id";
 		}
 	}
-	
+
 	private Boolean generateRepository(Relationship relationship) {
-		if((relationship.getRelationshipType() != null && relationship.getRelationshipType().equals(RelationshipType.MANY_TO_MANY_SEPARATE_CLASS)) || relationship.getRelationshipType() == null) {
+		if ((relationship.getRelationshipType() != null
+				&& relationship.getRelationshipType().equals(RelationshipType.MANY_TO_MANY_SEPARATE_CLASS))
+				|| relationship.getRelationshipType() == null) {
 			return true;
 		} else {
 			return false;
