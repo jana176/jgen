@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.codegenerator.jgen.generator.BasicGenerator;
@@ -19,10 +18,7 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
 @Service
-public class CompositeKeyModelGeneratorService {
-
-	@Autowired
-	public BasicGenerator basicGenerator;
+public class CompositeKeyModelGeneratorService extends BasicGenerator {
 
 	private List<String> imports = new ArrayList<>();
 
@@ -35,11 +31,11 @@ public class CompositeKeyModelGeneratorService {
 		imports.add("javax.persistence.Embeddable");
 		imports.add("javax.persistence.Column");
 		imports.add("java.io.Serializable");
-		Template template = basicGenerator.retrieveTemplate(PackageType.EMBEDDED_KEY);
+		Template template = retrieveTemplate(PackageType.EMBEDDED_KEY);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		try {
-			out = basicGenerator.getAndPrepareWriter(path + File.separator + PackageType.MODEL.toString().toLowerCase()
+			out = getAndPrepareWriter(path + File.separator + PackageType.MODEL.toString().toLowerCase()
 					+ File.separator + classData.getClassName() + "Id.java");
 			context.clear();
 			context.put("class", classData);

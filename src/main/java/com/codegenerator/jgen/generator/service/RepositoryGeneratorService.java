@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.codegenerator.jgen.generator.BasicGenerator;
@@ -24,10 +23,7 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
 @Service
-public class RepositoryGeneratorService {
-
-	@Autowired
-	public BasicGenerator basicGenerator;
+public class RepositoryGeneratorService extends BasicGenerator {
 
 	private List<String> imports = new ArrayList<>();
 
@@ -45,13 +41,12 @@ public class RepositoryGeneratorService {
 		final String idType = retrieveIdColumnType(classData, packageName);
 		imports.add(packageName + ".model." + classData.getClassName());
 
-		Template template = basicGenerator.retrieveTemplate(PackageType.REPOSITORY);
+		Template template = retrieveTemplate(PackageType.REPOSITORY);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		try {
-			out = basicGenerator
-					.getAndPrepareWriter(path + File.separator + PackageType.REPOSITORY.toString().toLowerCase()
-							+ File.separator + classData.getClassName().concat("Repository") + ".java");
+			out = getAndPrepareWriter(path + File.separator + PackageType.REPOSITORY.toString().toLowerCase()
+					+ File.separator + classData.getClassName().concat("Repository") + ".java");
 			context.clear();
 			context.put("repoClassName", classData.getClassName());
 			context.put("idType", idType);

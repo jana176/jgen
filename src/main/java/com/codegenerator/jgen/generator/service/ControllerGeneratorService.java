@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.codegenerator.jgen.generator.BasicGenerator;
@@ -25,10 +24,7 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
 @Service
-public class ControllerGeneratorService {
-
-	@Autowired
-	public BasicGenerator basicGenerator;
+public class ControllerGeneratorService extends BasicGenerator {
 
 	private List<String> imports = new ArrayList<>();
 
@@ -41,7 +37,6 @@ public class ControllerGeneratorService {
 			generateControllerForModelClass(classData, path, packageName);
 		});
 	}
-	
 
 	private void generateControllerForModelClass(ClassData classData, String path, String packageName) {
 		prepareImports(classData);
@@ -49,13 +44,12 @@ public class ControllerGeneratorService {
 		imports.add(packageName + ".model." + classData.getClassName());
 		imports.add(packageName + ".service." + classData.getClassName() + "Service");
 
-		Template template = basicGenerator.retrieveTemplate(PackageType.CONTROLLER);
+		Template template = retrieveTemplate(PackageType.CONTROLLER);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		try {
-			out = basicGenerator
-					.getAndPrepareWriter(path + File.separator + PackageType.CONTROLLER.toString().toLowerCase()
-							+ File.separator + classData.getClassName().concat("Controller") + ".java");
+			out = getAndPrepareWriter(path + File.separator + PackageType.CONTROLLER.toString().toLowerCase()
+					+ File.separator + classData.getClassName().concat("Controller") + ".java");
 			context.clear();
 			context.put("class", classData);
 			context.put("fieldName", ClassNamesUtil.toFieldName(classData.getClassName()));

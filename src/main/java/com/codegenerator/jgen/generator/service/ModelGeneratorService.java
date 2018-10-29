@@ -26,10 +26,7 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
 @Service
-public class ModelGeneratorService {
-
-	@Autowired
-	public BasicGenerator basicGenerator;
+public class ModelGeneratorService extends BasicGenerator {
 
 	@Autowired
 	public EnumGeneratorService enumGeneratorService;
@@ -73,11 +70,11 @@ public class ModelGeneratorService {
 		imports.add("javax.persistence.Column");
 		imports.add("javax.persistence.Entity");
 		imports.add("javax.persistence.Table");
-		Template template = basicGenerator.retrieveTemplate(PackageType.MODEL);
+		Template template = retrieveTemplate(PackageType.MODEL);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		try {
-			out = basicGenerator.getAndPrepareWriter(path + File.separator + PackageType.MODEL.toString().toLowerCase()
+			out = getAndPrepareWriter(path + File.separator + PackageType.MODEL.toString().toLowerCase()
 					+ File.separator + classData.getClassName() + ".java");
 
 			context.clear();
