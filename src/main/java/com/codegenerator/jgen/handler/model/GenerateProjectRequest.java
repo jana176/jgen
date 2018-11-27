@@ -1,12 +1,8 @@
-package com.codegenerator.jgen.generator.model;
+package com.codegenerator.jgen.handler.model;
 
 import java.util.List;
 
 import javax.validation.Valid;
-
-import com.codegenerator.jgen.handler.model.ClassData;
-import com.codegenerator.jgen.handler.model.DatabaseConnection;
-import com.codegenerator.jgen.handler.model.NewProjectInfo;
 
 import lombok.Data;
 

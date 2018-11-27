@@ -10,24 +10,21 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.codegenerator.jgen.generator.ClassNamesUtil;
-import com.codegenerator.jgen.generator.model.PackageType;
+import com.codegenerator.jgen.generator.BasicGenerator;
+import com.codegenerator.jgen.generator.model.enumeration.PackageType;
 import com.codegenerator.jgen.handler.model.ClassData;
 import com.codegenerator.jgen.handler.model.Field;
 import com.codegenerator.jgen.handler.model.Relationship;
 import com.codegenerator.jgen.handler.model.enumeration.RelationshipType;
+import com.codegenerator.jgen.handler.util.ClassNamesUtil;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
 @Service
-public class ServiceGeneratorService {
-
-	@Autowired
-	public BasicGenerator basicGenerator;
+public class ServiceGeneratorService extends BasicGenerator {
 
 	private List<String> imports = new ArrayList<>();
 
@@ -48,13 +45,12 @@ public class ServiceGeneratorService {
 		imports.add(packageName + ".model." + classData.getClassName());
 		imports.add(packageName + ".repository." + classData.getClassName() + "Repository");
 
-		Template template = basicGenerator.retrieveTemplate(PackageType.SERVICE);
+		Template template = retrieveTemplate(PackageType.SERVICE);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		try {
-			out = basicGenerator
-					.getAndPrepareWriter(path + File.separator + PackageType.SERVICE.toString().toLowerCase()
-							+ File.separator + classData.getClassName().concat("Service") + ".java");
+			out = getAndPrepareWriter(path + File.separator + PackageType.SERVICE.toString().toLowerCase()
+					+ File.separator + classData.getClassName().concat("Service") + ".java");
 			context.clear();
 			context.put("class", classData);
 			context.put("fieldName", ClassNamesUtil.toFieldName(classData.getClassName()));

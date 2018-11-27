@@ -10,10 +10,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.codegenerator.jgen.generator.model.PackageType;
+import com.codegenerator.jgen.generator.BasicGenerator;
+import com.codegenerator.jgen.generator.model.enumeration.PackageType;
 import com.codegenerator.jgen.handler.model.ClassData;
 import com.codegenerator.jgen.handler.model.Field;
 import com.codegenerator.jgen.handler.model.Relationship;
@@ -23,10 +23,7 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
 @Service
-public class RepositoryGeneratorService {
-
-	@Autowired
-	public BasicGenerator basicGenerator;
+public class RepositoryGeneratorService extends BasicGenerator {
 
 	private List<String> imports = new ArrayList<>();
 
@@ -44,13 +41,12 @@ public class RepositoryGeneratorService {
 		final String idType = retrieveIdColumnType(classData, packageName);
 		imports.add(packageName + ".model." + classData.getClassName());
 
-		Template template = basicGenerator.retrieveTemplate(PackageType.REPOSITORY);
+		Template template = retrieveTemplate(PackageType.REPOSITORY);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		try {
-			out = basicGenerator
-					.getAndPrepareWriter(path + File.separator + PackageType.REPOSITORY.toString().toLowerCase()
-							+ File.separator + classData.getClassName().concat("Repository") + ".java");
+			out = getAndPrepareWriter(path + File.separator + PackageType.REPOSITORY.toString().toLowerCase()
+					+ File.separator + classData.getClassName().concat("Repository") + ".java");
 			context.clear();
 			context.put("repoClassName", classData.getClassName());
 			context.put("idType", idType);
@@ -70,7 +66,6 @@ public class RepositoryGeneratorService {
 			}
 		}
 		imports.clear();
-
 	}
 
 	private String retrieveIdColumnType(ClassData classData, String packageName) {
@@ -83,9 +78,11 @@ public class RepositoryGeneratorService {
 			return classData.getClassName() + "Id";
 		}
 	}
-	
+
 	private Boolean generateRepository(Relationship relationship) {
-		if((relationship.getRelationshipType() != null && relationship.getRelationshipType().equals(RelationshipType.MANY_TO_MANY_SEPARATE_CLASS)) || relationship.getRelationshipType() == null) {
+		if ((relationship.getRelationshipType() != null
+				&& relationship.getRelationshipType().equals(RelationshipType.MANY_TO_MANY_SEPARATE_CLASS))
+				|| relationship.getRelationshipType() == null) {
 			return true;
 		} else {
 			return false;

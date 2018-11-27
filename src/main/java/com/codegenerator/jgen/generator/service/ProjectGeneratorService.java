@@ -13,7 +13,8 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.codegenerator.jgen.generator.model.PackageType;
+import com.codegenerator.jgen.generator.BasicGenerator;
+import com.codegenerator.jgen.generator.model.enumeration.PackageType;
 import com.codegenerator.jgen.handler.model.DatabaseConnection;
 import com.codegenerator.jgen.handler.model.NewProjectInfo;
 
@@ -21,10 +22,7 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
 @Service
-public class ProjectGeneratorService {
-
-	@Autowired
-	public BasicGenerator basicGenerator;
+public class ProjectGeneratorService extends BasicGenerator {
 
 	@Autowired
 	public GeneratorService generatorService;
@@ -51,7 +49,7 @@ public class ProjectGeneratorService {
 	}
 
 	private void createPomFile(final String projectPath, final NewProjectInfo newProjectInfo) {
-		Template template = basicGenerator.retrieveTemplate(PackageType.POM);
+		Template template = retrieveTemplate(PackageType.POM);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		File outputFile = new File(projectPath + File.separator + "pom.xml");
@@ -87,7 +85,7 @@ public class ProjectGeneratorService {
 	}
 
 	private String generateApplicationMainClass(final String projectPath, final NewProjectInfo newProjectInfo) {
-		Template template = basicGenerator.retrieveTemplate(PackageType.APPLICATION);
+		Template template = retrieveTemplate(PackageType.APPLICATION);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		String mainPackagePath = projectPath + "\\src\\main\\java\\"
@@ -114,9 +112,9 @@ public class ProjectGeneratorService {
 		}
 		return mainPackagePath;
 	}
-	
+
 	private void createYamlFile(String path, DatabaseConnection database, String basePackageName) {
-		Template template = basicGenerator.retrieveTemplate(PackageType.YAML);
+		Template template = retrieveTemplate(PackageType.YAML);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		File outputFile = new File(path + "\\src\\main\\resources" + File.separator + "application.yml");

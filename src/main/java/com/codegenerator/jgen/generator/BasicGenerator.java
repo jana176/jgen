@@ -1,4 +1,4 @@
-package com.codegenerator.jgen.generator.service;
+package com.codegenerator.jgen.generator;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -10,14 +10,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 
-import com.codegenerator.jgen.generator.model.PackageType;
+import com.codegenerator.jgen.generator.model.enumeration.PackageType;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import lombok.Setter;
 
 @Component
-public class BasicGenerator {
+public abstract class BasicGenerator {
 
 	@Autowired
 	public FreeMarkerConfigurer freeMarkerConfigurer;
@@ -25,7 +25,7 @@ public class BasicGenerator {
 	@Setter
 	public String packagePath;
 
-	public Template retrieveTemplate(PackageType packageType) {
+	protected Template retrieveTemplate(PackageType packageType) {
 		Configuration config = freeMarkerConfigurer.getConfiguration();
 		Template template = null;
 		String templateName = determineTemplateName(packageType);
@@ -37,7 +37,7 @@ public class BasicGenerator {
 		return template;
 	}
 
-	public Writer getAndPrepareWriter(final String packagePath) throws IOException {
+	protected Writer getAndPrepareWriter(final String packagePath) throws IOException {
 		File outputFile = new File(packagePath);
 		outputFile.getParentFile().mkdirs();
 

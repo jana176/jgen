@@ -8,26 +8,23 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.codegenerator.jgen.generator.model.PackageType;
+import com.codegenerator.jgen.generator.BasicGenerator;
+import com.codegenerator.jgen.generator.model.enumeration.PackageType;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
 @Service
-public class NamingConventionGeneratorService {
+public class NamingConventionGeneratorService extends BasicGenerator {
 
-	@Autowired
-	public BasicGenerator basicGenerator;
-	
 	public void generate(String path, String packageName) {
 		generateCustomNamingStrategyClass(path, packageName);
 	}
-	
+
 	private void generateCustomNamingStrategyClass(final String path, String packageName) {
-		Template template = basicGenerator.retrieveTemplate(PackageType.NAMING_STRATEGY);
+		Template template = retrieveTemplate(PackageType.NAMING_STRATEGY);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		File outputFile = new File(path + File.separator + "RealNamingStrategyImpl.java");

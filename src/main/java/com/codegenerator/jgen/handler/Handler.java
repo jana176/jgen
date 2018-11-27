@@ -11,21 +11,22 @@ import com.codegenerator.jgen.database.model.FMColumn;
 import com.codegenerator.jgen.database.model.FMDatabaseMetadata;
 import com.codegenerator.jgen.database.model.FMForeignKey;
 import com.codegenerator.jgen.database.model.FMTable;
-import com.codegenerator.jgen.generator.ClassNamesUtil;
-import com.codegenerator.jgen.generator.model.GenerateClassesRequest;
-import com.codegenerator.jgen.generator.model.GenerateProjectRequest;
 import com.codegenerator.jgen.handler.model.ClassData;
+import com.codegenerator.jgen.handler.model.CompositeKey;
 import com.codegenerator.jgen.handler.model.Controller;
 import com.codegenerator.jgen.handler.model.ControllerOperations;
 import com.codegenerator.jgen.handler.model.DatabaseConnection;
 import com.codegenerator.jgen.handler.model.Enumeration;
 import com.codegenerator.jgen.handler.model.Field;
+import com.codegenerator.jgen.handler.model.GenerateClassesRequest;
+import com.codegenerator.jgen.handler.model.GenerateProjectRequest;
 import com.codegenerator.jgen.handler.model.NewProjectInfo;
 import com.codegenerator.jgen.handler.model.Property;
 import com.codegenerator.jgen.handler.model.Relationship;
 import com.codegenerator.jgen.handler.model.ServiceOperations;
 import com.codegenerator.jgen.handler.model.enumeration.RelationshipType;
 import com.codegenerator.jgen.handler.model.enumeration.Visibility;
+import com.codegenerator.jgen.handler.util.ClassNamesUtil;
 
 @Component
 public class Handler {
@@ -60,7 +61,7 @@ public class Handler {
 		determineRelationTables(classes);
 		NewProjectInfo npi = new NewProjectInfo();
 		generateProjectRequest.setNewProjectInfo(npi);
-		
+
 		return generateProjectRequest;
 	}
 
@@ -76,9 +77,24 @@ public class Handler {
 				.compositeKey(null)
 				.build();
 		//@formatter:on
+		ControllerOperations co = ControllerOperations.builder().build();
+		Controller c = Controller.builder().controllerOperations(co).build();
+		classData.setController(c);
+		ServiceOperations so = ServiceOperations.builder().build();
+		com.codegenerator.jgen.handler.model.Service s = com.codegenerator.jgen.handler.model.Service.builder()
+				.serviceOperations(so).build();
+		classData.setService(s);
 
-		// get all regular columns aka Fields
-		List<FMColumn> fieldColumns = table.getTableColumns().stream()
+		populateFields(table.getTableColumns(), classData);
+		populateEnums(table.getTableColumns(), classData);
+		populateForeignKeys(table.getTableColumns(), classData);
+		populateCompositeKeyColumns(table, classData);
+
+		return classData;
+	}
+
+	private void populateFields(List<FMColumn> columns, ClassData classData) {
+		List<FMColumn> fieldColumns = columns.stream()
 				.filter(column -> (!column.getIsEnum() && column.getForeignKeyInfo() == null))
 				.collect(Collectors.toList());
 		List<Field> fields = new ArrayList<>();
@@ -99,10 +115,10 @@ public class Handler {
 			fields.add(field);
 		});
 		classData.setFields(fields);
+	}
 
-		// get all the enums
-		List<FMColumn> enumColumns = table.getTableColumns().stream().filter(column -> column.getIsEnum())
-				.collect(Collectors.toList());
+	private void populateEnums(List<FMColumn> columns, ClassData classData) {
+		List<FMColumn> enumColumns = columns.stream().filter(column -> column.getIsEnum()).collect(Collectors.toList());
 		List<Enumeration> enums = new ArrayList<>();
 		enumColumns.forEach(column -> {
 			//@formatter:off
@@ -115,10 +131,11 @@ public class Handler {
 			enums.add(enumeration);
 		});
 		classData.setEnums(enums);
+	}
 
-		// get all the foreign keys
-		List<FMColumn> foreignKeyColumns = table.getTableColumns().stream()
-				.filter(column -> (column.getForeignKeyInfo() != null)).collect(Collectors.toList());
+	private void populateForeignKeys(List<FMColumn> columns, ClassData classData) {
+		List<FMColumn> foreignKeyColumns = columns.stream().filter(column -> (column.getForeignKeyInfo() != null))
+				.collect(Collectors.toList());
 		List<Property> properties = new ArrayList<>();
 		foreignKeyColumns.forEach(column -> {
 			FMForeignKey foreignKey = column.getForeignKeyInfo();
@@ -148,16 +165,9 @@ public class Handler {
 			//@formatter:on
 		});
 		classData.setProperties(properties);
+	}
 
-		ControllerOperations co = ControllerOperations.builder().build();
-		Controller c = Controller.builder().controllerOperations(co).build();
-		classData.setController(c);
-		ServiceOperations so = ServiceOperations.builder().build();
-		com.codegenerator.jgen.handler.model.Service s = com.codegenerator.jgen.handler.model.Service.builder()
-				.serviceOperations(so).build();
-		classData.setService(s);
-
-		// get all composite PK's
+	private void populateCompositeKeyColumns(FMTable table, ClassData classData) {
 		if (table.getCompositePrimaryKeyColumns() != null) {
 			table.getCompositePrimaryKeyColumns().forEach(name -> {
 				Optional<Field> pkField = classData.getFields().stream().filter(f -> f.getColumnName().equals(name))
@@ -172,14 +182,28 @@ public class Handler {
 				}
 			});
 		}
-
-		return classData;
+		if (!classData.getCompositePks().isEmpty()) {
+			CompositeKey compositeKey = new CompositeKey(classData.getTableName(), new ArrayList<Field>(),
+					new ArrayList<Property>());
+			classData.getCompositePks().stream().forEach(ck -> {
+				classData.getFields().stream().forEach(field -> {
+					if (field.getColumnName().equals(ck)) {
+						compositeKey.getFields().add(field);
+					}
+				});
+				classData.getProperties().stream().forEach(property -> {
+					if (property.getColumnName().equals(ck)) {
+						compositeKey.getProperties().add(property);
+					}
+				});
+			});
+			classData.setCompositeKey(compositeKey);
+		}
 	}
 
 	private void determineRelationTables(List<ClassData> classes) {
 		List<Property> pkProperties = new ArrayList<>();
 		List<Property> fkProperties = new ArrayList<>();
-
 		classes.forEach(classData -> {
 			classData.getProperties().forEach(property -> {
 				if (!property.getIsSelfReferenced()) {
@@ -188,12 +212,8 @@ public class Handler {
 					} else
 						fkProperties.add(property);
 				}
-
 			});
 			if (pkProperties.size() >= 2) {
-//				System.out
-//						.println("Ima bar dva strana kljuca kao primarna, poveznicka tabela sa kompozitnim kljucem! - "
-//								+ classData.getTableName());
 				classData.getRelationship().setIsRelationshipClass(true);
 				if (classData.getFields().size() > 0 || classData.getEnums().size() > 0)
 					classData.getRelationship().setRelationshipType(RelationshipType.MANY_TO_MANY_SEPARATE_CLASS);
@@ -201,8 +221,6 @@ public class Handler {
 					classData.getRelationship().setRelationshipType(RelationshipType.MANY_TO_MANY);
 			}
 			if (fkProperties.size() >= 2) {
-//				System.out.println("Ima bar dva strana kljuca ali nisu primarni, MOZDA je poveznicka tablela! - "
-//						+ classData.getTableName());
 			}
 			pkProperties.clear();
 			fkProperties.clear();

@@ -8,48 +8,38 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.codegenerator.jgen.generator.model.PackageType;
+import com.codegenerator.jgen.generator.BasicGenerator;
+import com.codegenerator.jgen.generator.model.enumeration.PackageType;
 import com.codegenerator.jgen.handler.model.ClassData;
-import com.codegenerator.jgen.handler.model.CompositeKey;
-import com.codegenerator.jgen.handler.model.Field;
-import com.codegenerator.jgen.handler.model.Property;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
 @Service
-public class CompositeKeyModelGeneratorService {
-
-	@Autowired
-	public BasicGenerator basicGenerator;
+public class CompositeKeyModelGeneratorService extends BasicGenerator {
 
 	private List<String> imports = new ArrayList<>();
 
-	public void generate(ClassData classData, List<String> compositePks, String path, String packageName) {
+	public void generate(ClassData classData, String path, String packageName) {
 
-		CompositeKey compositeKey = createCompositeKey(classData, compositePks);
-		classData.setCompositeKey(compositeKey);
-		generateCompositeKeyModelClass(classData, compositeKey, path, packageName);
-
+		generateCompositeKeyModelClass(classData, path, packageName);
 	}
 
-	private void generateCompositeKeyModelClass(ClassData classData, CompositeKey compositeKey, String path,
-			String packageName) {
+	private void generateCompositeKeyModelClass(ClassData classData, String path, String packageName) {
 		imports.add("javax.persistence.Embeddable");
 		imports.add("javax.persistence.Column");
 		imports.add("java.io.Serializable");
-		Template template = basicGenerator.retrieveTemplate(PackageType.EMBEDDED_KEY);
+		Template template = retrieveTemplate(PackageType.EMBEDDED_KEY);
 		Writer out = null;
 		Map<String, Object> context = new HashMap<String, Object>();
 		try {
-			out = basicGenerator.getAndPrepareWriter(path + File.separator + PackageType.MODEL.toString().toLowerCase()
+			out = getAndPrepareWriter(path + File.separator + PackageType.MODEL.toString().toLowerCase()
 					+ File.separator + classData.getClassName() + "Id.java");
 			context.clear();
 			context.put("class", classData);
-			context.put("compositeKey", compositeKey);
+			context.put("compositeKey", classData.getCompositeKey());
 			context.put("packageName", packageName.concat(".model"));
 			context.put("imports", imports);
 			template.process(context, out);
@@ -66,24 +56,6 @@ public class CompositeKeyModelGeneratorService {
 			}
 		}
 		imports.clear();
-	}
-
-	private CompositeKey createCompositeKey(ClassData classData, List<String> compositePks) {
-		CompositeKey compositeKey = new CompositeKey(classData.getTableName(), new ArrayList<Field>(),
-				new ArrayList<Property>());
-		compositePks.stream().forEach(ck -> {
-			classData.getFields().stream().forEach(field -> {
-				if (field.getColumnName().equals(ck)) {
-					compositeKey.getFields().add(field);
-				}
-			});
-			classData.getProperties().stream().forEach(property -> {
-				if (property.getColumnName().equals(ck)) {
-					compositeKey.getProperties().add(property);
-				}
-			});
-		});
-		return compositeKey;
 	}
 
 }

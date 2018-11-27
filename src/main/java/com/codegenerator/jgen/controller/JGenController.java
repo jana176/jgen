@@ -14,12 +14,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.codegenerator.jgen.controller.validator.ProjectRequestValidator;
 import com.codegenerator.jgen.database.model.FMDatabaseMetadata;
 import com.codegenerator.jgen.database.service.DatabaseMetadataService;
-import com.codegenerator.jgen.generator.model.GenerateClassesRequest;
-import com.codegenerator.jgen.generator.model.GenerateProjectRequest;
-import com.codegenerator.jgen.generator.model.GeneratorType;
 import com.codegenerator.jgen.generator.service.GeneratorService;
 import com.codegenerator.jgen.generator.service.ProjectGeneratorService;
 import com.codegenerator.jgen.handler.Handler;
+import com.codegenerator.jgen.handler.model.GenerateClassesRequest;
+import com.codegenerator.jgen.handler.model.GenerateProjectRequest;
+import com.codegenerator.jgen.handler.model.enumeration.GeneratorType;
 
 @RestController
 @RequestMapping("/jgen")

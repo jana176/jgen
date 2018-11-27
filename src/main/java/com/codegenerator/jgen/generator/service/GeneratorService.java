@@ -6,9 +6,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.codegenerator.jgen.generator.model.GenerateClassesRequest;
-import com.codegenerator.jgen.generator.model.GenerateProjectRequest;
 import com.codegenerator.jgen.handler.model.ClassData;
+import com.codegenerator.jgen.handler.model.GenerateClassesRequest;
+import com.codegenerator.jgen.handler.model.GenerateProjectRequest;
 
 @Service
 public class GeneratorService {
