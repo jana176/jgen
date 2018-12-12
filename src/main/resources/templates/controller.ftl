@@ -19,6 +19,10 @@ public class ${class.className}Controller {
 	private ${class.className}Service ${fieldName}Service;
 	
 	<#if class.controller.controllerOperations.get && !class.compositeKey??>
+    @GetMapping(value = "/${fieldName}")
+    public Iterable<${class.className}> get${class.className}() {
+        return ${fieldName}Service.findAll();
+    }
 
 	@GetMapping(value = "/${fieldName}/{id}")
     public ResponseEntity<Optional<${class.className}>> get${class.className}(@PathVariable ${idField.type} id) {
@@ -27,8 +31,13 @@ public class ${class.className}Controller {
         	return ResponseEntity.ok(${fieldName});
         else
         	return ResponseEntity.notFound().build();
-    }
+    }    
     <#elseif class.controller.controllerOperations.get && class.compositeKey??>
+    @GetMapping(value = "/${fieldName}")
+    public Iterable<${class.className}> get${class.className}() {
+        return ${fieldName}Service.findAll();
+    }
+    
     @GetMapping(value = "/${fieldName}")
     public ResponseEntity<Optional<${class.className}>> get${class.className}(<#if class.compositeKey.fields??><#list class.compositeKey.fields as field>@RequestParam(value = "${field.columnName}") ${field.type} ${field.columnName}, </#list></#if><#if class.compositeKey.properties??><#list class.compositeKey.properties as property>@RequestParam(value = "${property.columnName}") ${property.type} ${property.columnName}<#if property!=class.compositeKey.properties?last>, </#if></#list></#if>) {
         ${class.className}Id ${fieldName}Id = new ${class.className}Id(<#if class.compositeKey.fields??><#list class.compositeKey.fields as field>${field.columnName}, </#list></#if><#if class.compositeKey.properties??><#list class.compositeKey.properties as property>${property.columnName}<#if property!=class.compositeKey.properties?last>, </#if></#list></#if>);
@@ -66,7 +75,7 @@ public class ${class.className}Controller {
 	</#if>
 	<#if class.controller.controllerOperations.post>
 	
-	@PostMapping(value = "/${class.tableName?lower_case}")
+	@PostMapping(value = "/${fieldName}")
     public ${class.className} create${class.className}(@RequestBody ${class.className} ${fieldName}) {
         return ${fieldName}Service.save(${fieldName});
     }
